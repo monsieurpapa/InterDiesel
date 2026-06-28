@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAZY KONNECT — Internet Accessible à Goma</title>
+<style>
+:root{--navy:#0A0E1A;--card:#0F1729;--blue:#0066FF;--cyan:#00D4FF;--orange:#FF6B35;--green:#10B981;--purple:#6366F1;--yellow:#F59E0B;--text:#E2E8F0;--muted:#64748B;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6;}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:100;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;transition:background .3s,box-shadow .3s;}
+nav.scrolled{background:rgba(10,14,26,.95);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(255,255,255,.06);}
+.logo{font-size:1.4rem;font-weight:800;letter-spacing:-.5px;}
+.logo span:first-child{color:#fff;}
+.logo span:last-child{color:var(--cyan);}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:#fff;}
+.nav-cta{background:var(--blue);color:#fff;padding:.5rem 1.2rem;border-radius:6px;text-decoration:none;font-size:.875rem;font-weight:600;transition:background .2s;}
+.nav-cta:hover{background:#0052cc;}
+.hamburger{display:none;cursor:pointer;background:none;border:none;color:#fff;font-size:1.4rem;}
+
+/* HERO */
+#hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;}
+.hero-content{position:relative;z-index:2;max-width:700px;padding:8rem 2rem 4rem;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);color:var(--cyan);padding:.35rem .9rem;border-radius:999px;font-size:.8rem;font-weight:600;margin-bottom:1.5rem;}
+.hero-badge::before{content:'';width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite;}
+h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.1;margin-bottom:1rem;letter-spacing:-.03em;}
+h1 .highlight{color:var(--cyan);}
+.hero-sub{font-size:1.15rem;color:var(--muted);max-width:500px;margin-bottom:2rem;}
+.hero-price{font-size:1.3rem;font-weight:700;color:var(--orange);margin-bottom:2rem;}
+.hero-price span{font-size:1rem;font-weight:400;color:var(--muted);}
+.btn-group{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:3rem;}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.8rem;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;transition:all .2s;cursor:pointer;border:none;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:#0052cc;transform:translateY(-1px);}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.2);}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan);}
+.hero-tech{display:flex;flex-wrap:wrap;gap:1.5rem;}
+.hero-tech-item{display:flex;align-items:center;gap:.5rem;color:var(--muted);font-size:.85rem;}
+.hero-tech-item svg{color:var(--cyan);flex-shrink:0;}
+
+/* SECTION */
+section{padding:5rem 2rem;}
+.container{max-width:1100px;margin:0 auto;}
+.section-badge{display:inline-block;color:var(--cyan);font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem;}
+.section-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.02em;}
+.section-sub{color:var(--muted);max-width:520px;font-size:1.05rem;}
+
+/* HOW IT WORKS */
+#how{background:var(--card);}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem;margin-top:3rem;}
+.step{text-align:center;padding:2rem 1.5rem;}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;font-size:1.4rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.step-icon{font-size:2.2rem;margin-bottom:1rem;}
+.step h3{font-size:1.15rem;font-weight:700;margin-bottom:.5rem;}
+.step p{color:var(--muted);font-size:.92rem;}
+.step-connector{display:flex;align-items:center;justify-content:center;padding-top:1.5rem;color:var(--blue);font-size:1.5rem;}
+
+/* PACKAGES */
+.packages-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-top:3rem;}
+.pkg-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.75rem 1.5rem;transition:transform .2s,border-color .2s;position:relative;overflow:hidden;}
+.pkg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c);}
+.pkg-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.12);}
+.pkg-badge{display:inline-block;background:rgba(255,255,255,.07);color:#fff;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:4px;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.08em;}
+.pkg-name{font-size:1.1rem;font-weight:700;margin-bottom:.25rem;}
+.pkg-price{font-size:2rem;font-weight:900;color:var(--c);margin:.5rem 0;}
+.pkg-price sup{font-size:1rem;vertical-align:super;}
+.pkg-price sub{font-size:.8rem;color:var(--muted);}
+.pkg-duration{color:var(--muted);font-size:.85rem;margin-bottom:1rem;}
+.pkg-features{list-style:none;font-size:.875rem;}
+.pkg-features li{padding:.3rem 0;color:var(--muted);display:flex;align-items:center;gap:.5rem;}
+.pkg-features li::before{content:'✓';color:var(--c);font-weight:700;}
+.pkg-cta{display:block;margin-top:1.5rem;text-align:center;padding:.65rem;border-radius:8px;background:rgba(255,255,255,.07);color:#fff;font-weight:600;font-size:.875rem;text-decoration:none;transition:background .2s;}
+.pkg-cta:hover{background:var(--c);color:#000;}
+
+/* COVERAGE */
+#coverage{background:var(--card);}
+.coverage-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;margin-top:3rem;}
+.coverage-map{position:relative;height:320px;background:linear-gradient(135deg,#0A1628,#0F2340);border-radius:16px;overflow:hidden;border:1px solid rgba(0,212,255,.15);}
+.map-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.map-dot{width:16px;height:16px;background:var(--cyan);border-radius:50%;margin:0 auto 1rem;box-shadow:0 0 0 8px rgba(0,212,255,.15),0 0 0 24px rgba(0,212,255,.06),0 0 0 60px rgba(0,212,255,.03);animation:mapPulse 3s infinite;}
+.map-label h4{font-size:.95rem;font-weight:700;color:var(--cyan);}
+.map-label p{font-size:.8rem;color:var(--muted);}
+.map-sector{position:absolute;top:50%;left:50%;width:160px;height:160px;border-radius:50%;border:1px dashed rgba(0,212,255,.2);transform:translate(-50%,-50%);}
+.map-sector:nth-child(2){width:280px;height:280px;border-color:rgba(0,212,255,.1);}
+.coverage-info{display:flex;flex-direction:column;gap:1.5rem;}
+.cov-item{display:flex;align-items:flex-start;gap:1rem;}
+.cov-icon{width:40px;height:40px;background:rgba(0,102,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;}
+.cov-item h4{font-weight:700;margin-bottom:.2rem;}
+.cov-item p{color:var(--muted);font-size:.9rem;}
+
+/* STATS */
+#stats{background:var(--navy);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2rem;margin-top:3rem;}
+.stat-card{text-align:center;padding:2rem 1rem;}
+.stat-number{font-size:3rem;font-weight:900;color:var(--cyan);line-height:1;}
+.stat-unit{font-size:1.2rem;color:var(--blue);}
+.stat-label{color:var(--muted);font-size:.9rem;margin-top:.5rem;}
+
+/* FAQ */
+#faq{background:var(--card);}
+.faq-list{max-width:700px;margin:3rem auto 0;}
+.faq-item{border-bottom:1px solid rgba(255,255,255,.06);padding:1.25rem 0;}
+.faq-q{width:100%;background:none;border:none;color:#fff;font-size:1rem;font-weight:600;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:0;}
+.faq-q .arrow{color:var(--cyan);font-size:1.2rem;transition:transform .3s;flex-shrink:0;}
+.faq-q.open .arrow{transform:rotate(45deg);}
+.faq-a{color:var(--muted);font-size:.925rem;line-height:1.7;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;}
+.faq-a.open{max-height:200px;padding-top:.75rem;}
+
+/* FOOTER */
+footer{background:#060A12;border-top:1px solid rgba(255,255,255,.05);padding:3rem 2rem;}
+.footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;}
+.footer-brand .logo{display:block;margin-bottom:.75rem;font-size:1.5rem;}
+.footer-brand p{color:var(--muted);font-size:.9rem;max-width:280px;line-height:1.6;}
+.footer-col h4{font-weight:700;margin-bottom:1rem;color:#fff;}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.footer-col a{color:var(--muted);text-decoration:none;font-size:.9rem;transition:color .2s;}
+.footer-col a:hover{color:var(--cyan);}
+.footer-bottom{max-width:1100px;margin:2rem auto 0;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.footer-bottom p{color:var(--muted);font-size:.8rem;}
+.contact-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);color:var(--cyan);padding:.4rem 1rem;border-radius:999px;font-size:.8rem;font-weight:600;text-decoration:none;}
+.contact-badge:hover{background:rgba(0,102,255,.2);}
+
+/* ANIMATIONS */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes mapPulse{0%,100%{box-shadow:0 0 0 8px rgba(0,212,255,.15),0 0 0 24px rgba(0,212,255,.06),0 0 0 60px rgba(0,212,255,.03)}50%{box-shadow:0 0 0 12px rgba(0,212,255,.1),0 0 0 36px rgba(0,212,255,.04),0 0 0 80px rgba(0,212,255,.02)}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links,.nav-cta{display:none;}
+  .hamburger{display:block;}
+  .hero-content{padding:7rem 1.25rem 3rem;}
+  .coverage-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  section{padding:3.5rem 1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="logo"><span>EAZY</span><span>KONNECT</span></div>
+  <ul class="nav-links">
+    <li><a href="#how">Comment ça marche</a></li>
+    <li><a href="#packages">Forfaits</a></li>
+    <li><a href="#coverage">Zone</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#packages" class="nav-cta">Acheter un Voucher</a>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">🛰 Propulsé par Starlink</div>
+    <h1>Internet <span class="highlight">Accessible</span><br>Pour Tous à Goma</h1>
+    <p class="hero-sub">Connexion WiFi haut débit disponible dans les quartiers populaires. Sans abonnement mensuel — payez uniquement ce que vous consommez.</p>
+    <p class="hero-price">À partir de <strong>200 FC</strong> <span>/ heure</span></p>
+    <div class="btn-group">
+      <a href="#packages" class="btn btn-primary">🎟 Voir les Forfaits</a>
+      <a href="#how" class="btn btn-outline">Comment ça marche ?</a>
+    </div>
+    <div class="hero-tech">
+      <span class="hero-tech-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6s4-4 11-4 11 4 11 4"/><path d="M5 10s2.5-2.5 7-2.5 7 2.5 7 2.5"/><path d="M9 14s1-1 3-1 3 1 3 1"/><circle cx="12" cy="18" r="1"/></svg>Réseau WiFi 2.4 GHz</span>
+      <span class="hero-tech-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Backhaul Starlink</span>
+      <span class="hero-tech-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Connexion sécurisée</span>
+      <span class="hero-tech-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Disponible 24h/7j</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-badge">Processus</div>
+    <h2 class="section-title">Comment ça marche ?</h2>
+    <p class="section-sub">En 3 étapes simples, vous êtes connecté à Internet en moins de 2 minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-icon">🎟</div>
+        <h3>Achetez un Voucher</h3>
+        <p>Rendez-vous chez un distributeur EAZY KONNECT dans votre quartier. Choisissez votre forfait selon votre budget et besoin.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-icon">📶</div>
+        <h3>Connectez-vous au WiFi</h3>
+        <p>Ouvrez les paramètres WiFi de votre téléphone ou ordinateur. Sélectionnez le réseau <strong>EAZY-KONNECT</strong>.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-icon">🚀</div>
+        <h3>Entrez votre code</h3>
+        <p>Une page s'ouvre automatiquement. Saisissez votre code de voucher et commencez à naviguer immédiatement !</p>
+      </div>
+    </div>
+    <div style="margin-top:2.5rem;padding:1.5rem;background:rgba(0,102,255,.07);border:1px solid rgba(0,102,255,.15);border-radius:12px;max-width:600px;">
+      <p style="font-size:.92rem;color:var(--muted);">💡 <strong style="color:#fff;">Remarque :</strong> Votre connexion est limitée dans le temps selon le forfait choisi. Quand le temps expire, la connexion s'interrompt automatiquement — comme dans les anciens cybercafés. Rachetez un voucher pour continuer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section id="packages" style="background:var(--navy);">
+  <div class="container">
+    <div class="section-badge">Tarifs</div>
+    <h2 class="section-title">Nos Forfaits</h2>
+    <p class="section-sub">Des options pour chaque besoin — de la navigation rapide à la connexion familiale hebdomadaire.</p>
+    <div class="packages-grid">
+
+      <div class="pkg-card" style="--c:#FF6B35">
+        <div class="pkg-badge">Express</div>
+        <div class="pkg-name">1 Heure</div>
+        <div class="pkg-price"><sup>FC</sup>200</div>
+        <div class="pkg-duration">⏱ Valable 1 heure</div>
+        <ul class="pkg-features">
+          <li>Vitesse 2 Mbps</li>
+          <li>1 appareil</li>
+          <li>Idéal : réseaux sociaux</li>
+          <li>WhatsApp & emails</li>
+        </ul>
+        <a href="#" class="pkg-cta" onclick="scrollToContact()">Trouver un revendeur</a>
+      </div>
+
+      <div class="pkg-card" style="--c:#00D4FF">
+        <div class="pkg-badge">Standard</div>
+        <div class="pkg-name">3 Heures</div>
+        <div class="pkg-price"><sup>FC</sup>500</div>
+        <div class="pkg-duration">⏱ Valable 3 heures</div>
+        <ul class="pkg-features">
+          <li>Vitesse 3 Mbps</li>
+          <li>1 appareil</li>
+          <li>Navigation confortable</li>
+          <li>YouTube SD</li>
+        </ul>
+        <a href="#" class="pkg-cta" onclick="scrollToContact()">Trouver un revendeur</a>
+      </div>
+
+      <div class="pkg-card" style="--c:#10B981;border-color:rgba(16,185,129,.2);">
+        <div class="pkg-badge">Journée</div>
+        <div class="pkg-name">12 Heures</div>
+        <div class="pkg-price"><sup>FC</sup>1 000</div>
+        <div class="pkg-duration">⏱ Valable 12 heures</div>
+        <ul class="pkg-features">
+          <li>Vitesse 5 Mbps</li>
+          <li>1 appareil</li>
+          <li>Demi-journée de surf</li>
+          <li>Appels vidéo</li>
+        </ul>
+        <a href="#" class="pkg-cta" onclick="scrollToContact()">Trouver un revendeur</a>
+      </div>
+
+      <div class="pkg-card" style="--c:#6366F1">
+        <div class="pkg-badge" style="background:rgba(99,102,241,.2);color:#818CF8;">⭐ Populaire</div>
+        <div class="pkg-name">24 Heures</div>
+        <div class="pkg-price"><sup>FC</sup>2 000</div>
+        <div class="pkg-duration">⏱ Valable 24 heures</div>
+        <ul class="pkg-features">
+          <li>Vitesse 5 Mbps</li>
+          <li>1 appareil</li>
+          <li>Journée complète</li>
+          <li>Streaming HD</li>
+        </ul>
+        <a href="#" class="pkg-cta" onclick="scrollToContact()">Trouver un revendeur</a>
+      </div>
+
+      <div class="pkg-card" style="--c:#F59E0B">
+        <div class="pkg-badge">Famille</div>
+        <div class="pkg-name">7 Jours</div>
+        <div class="pkg-price"><sup>FC</sup>10 000</div>
+        <div class="pkg-duration">⏱ Valable 7 jours</div>
+        <ul class="pkg-features">
+          <li>Vitesse 10 Mbps</li>
+          <li>1 appareil</li>
+          <li>Semaine complète</li>
+          <li>Téléchargements</li>
+        </ul>
+        <a href="#" class="pkg-cta" onclick="scrollToContact()">Trouver un revendeur</a>
+      </div>
+
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.5rem;">
+      Tous les prix en Francs Congolais (FC) · 1 USD ≈ 2 800 FC · Pas d'abonnement mensuel
+    </p>
+  </div>
+</section>
+
+<!-- COVERAGE -->
+<section id="coverage">
+  <div class="container">
+    <div class="section-badge">Couverture</div>
+    <h2 class="section-title">Zone de couverture</h2>
+    <p class="section-sub">Phase pilote dans le quartier Himbi-Alanine avec extension progressive vers les quartiers voisins.</p>
+    <div class="coverage-grid">
+      <div class="coverage-map">
+        <div class="map-sector"></div>
+        <div class="map-sector"></div>
+        <div class="map-label">
+          <div class="map-dot"></div>
+          <h4>Tour EAZY KONNECT</h4>
+          <p>Q/Himbi-Alanine, Goma</p>
+        </div>
+      </div>
+      <div class="coverage-info">
+        <div class="cov-item">
+          <div class="cov-icon">📡</div>
+          <div>
+            <h4>Rayon de couverture</h4>
+            <p>1,5 km autour du point d'émission — couvrant tout le quartier Himbi-Alanine et ses alentours.</p>
+          </div>
+        </div>
+        <div class="cov-item">
+          <div class="cov-icon">🏗</div>
+          <div>
+            <h4>Infrastructure réseau</h4>
+            <p>3 antennes sectorielles 120° (15–16 dBi) montées sur un point élevé (>30 m) pour une couverture optimale.</p>
+          </div>
+        </div>
+        <div class="cov-item">
+          <div class="cov-icon">🛰</div>
+          <div>
+            <h4>Backhaul Starlink</h4>
+            <p>Connexion satellite directe assurant plus de 100 Mbps de bande passante — indépendante de l'infrastructure locale.</p>
+          </div>
+        </div>
+        <div class="cov-item">
+          <div class="cov-icon">⚡</div>
+          <div>
+            <h4>Alimentation sécurisée</h4>
+            <p>Onduleur 1 500 VA avec protection contre les coupures et les surtensions — réseau disponible même en cas de délestage.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="container" style="text-align:center;">
+    <div class="section-badge">Chiffres clés</div>
+    <h2 class="section-title">EAZY KONNECT en chiffres</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" data-target="150">0</div><div class="stat-unit">+</div>
+        <div class="stat-label">Utilisateurs par jour</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="1">0</div><div class="stat-unit">,5 km</div>
+        <div class="stat-label">Rayon de couverture</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="100">0</div><div class="stat-unit"> Mbps</div>
+        <div class="stat-label">Débit backhaul Starlink</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="24">0</div><div class="stat-unit">h/7j</div>
+        <div class="stat-label">Disponibilité</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="200">0</div><div class="stat-unit"> FC</div>
+        <div class="stat-label">Prix minimum</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-badge" style="display:block;text-align:center;">Questions fréquentes</div>
+    <h2 class="section-title" style="text-align:center;">FAQ</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Comment se connecter au réseau EAZY KONNECT ? <span class="arrow">+</span></button>
+        <div class="faq-a">Allez dans les paramètres WiFi de votre appareil, sélectionnez "EAZY-KONNECT". Une page s'ouvrira automatiquement dans votre navigateur. Entrez le code de votre voucher et cliquez sur "Connecter". C'est tout !</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Où puis-je acheter des vouchers ? <span class="arrow">+</span></button>
+        <div class="faq-a">Les vouchers sont vendus chez les distributeurs locaux dans le quartier Himbi-Alanine et les zones couvertes. Repérez les points de vente avec l'affiche "EAZY KONNECT". Des points de vente supplémentaires s'ajouteront avec l'expansion du réseau.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Que se passe-t-il quand mon temps expire ? <span class="arrow">+</span></button>
+        <div class="faq-a">Votre connexion Internet est automatiquement coupée lorsque votre forfait expire — exactement comme dans un cybercafé. Vos appareils restent connectés au WiFi, mais sans accès Internet. Pour continuer, achetez un nouveau voucher et entrez le code.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Combien d'appareils puis-je connecter avec un voucher ? <span class="arrow">+</span></button>
+        <div class="faq-a">Chaque voucher est valable pour 1 appareil. Le code est lié à l'adresse MAC de votre appareil lors de la première connexion. Si vous souhaitez connecter plusieurs appareils, achetez un voucher par appareil.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Y a-t-il un abonnement mensuel ou une inscription ? <span class="arrow">+</span></button>
+        <div class="faq-a">Non. EAZY KONNECT fonctionne sans abonnement mensuel, sans inscription, sans carte SIM. Vous payez uniquement pour ce que vous utilisez. Achetez un voucher quand vous en avez besoin, c'est tout.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Quelle est la vitesse de connexion ? <span class="arrow">+</span></button>
+        <div class="faq-a">La vitesse dépend du forfait choisi : de 2 Mbps (Express) à 10 Mbps (Hebdomadaire). Le backhaul Starlink garantit plus de 100 Mbps de bande passante totale, partagée entre les utilisateurs actifs.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Le réseau est-il disponible la nuit et en cas de coupure d'électricité ? <span class="arrow">+</span></button>
+        <div class="faq-a">Oui ! Le réseau fonctionne 24h/24, 7j/7. L'installation dispose d'un onduleur (UPS 1 500 VA) qui maintient le réseau actif même pendant les coupures d'électricité habituelles à Goma.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="logo"><span>EAZY</span><span>KONNECT</span></span>
+      <p>Internet haut débit accessible pour les ménages et situations d'urgence dans les quartiers populaires de Goma, RDC.</p>
+      <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <a href="https://wa.me/243000000000" class="contact-badge">💬 WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Forfaits</h4>
+      <ul>
+        <li><a href="#packages">Express 1h — 200 FC</a></li>
+        <li><a href="#packages">Standard 3h — 500 FC</a></li>
+        <li><a href="#packages">Journée 12h — 1 000 FC</a></li>
+        <li><a href="#packages">Quotidien 24h — 2 000 FC</a></li>
+        <li><a href="#packages">Hebdo 7j — 10 000 FC</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Informations</h4>
+      <ul>
+        <li><a href="#how">Comment ça marche</a></li>
+        <li><a href="#coverage">Zone couverte</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contact">Nous contacter</a></li>
+      </ul>
+      <div style="margin-top:1.5rem;">
+        <p style="color:var(--muted);font-size:.85rem;line-height:1.6;">📍 Quartier Himbi-Alanine<br>Goma, Nord-Kivu, RDC</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 EAZY KONNECT. Tous droits réservés.</p>
+    <p style="color:var(--muted);">Propulsé par Starlink · MikroTik · TP-Link Omada</p>
+  </div>
+</footer>
+
+<script>
+// Navbar scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', scrollY > 40);
+});
+
+// Hamburger menu
+function toggleMenu() {
+  const links = document.querySelector('.nav-links');
+  const cta = document.querySelector('.nav-cta');
+  if (links.style.display === 'flex') {
+    links.style.display = '';
+    cta.style.display = '';
+  } else {
+    links.style.cssText = 'display:flex;flex-direction:column;position:fixed;top:60px;left:0;right:0;background:rgba(10,14,26,.97);padding:1.5rem;gap:1.5rem;';
+    cta.style.cssText = 'display:block;margin:0 1.5rem;';
+  }
+}
+
+// FAQ accordion
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  btn.classList.toggle('open');
+  answer.classList.toggle('open');
+}
+
+// Scroll to contact
+function scrollToContact() {
+  document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Stats counter animation
+function animateCounters() {
+  document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+    const target = +el.dataset.target;
+    let current = 0;
+    const step = Math.ceil(target / 40);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current;
+      if (current >= target) clearInterval(timer);
+    }, 30);
+  });
+}
+
+const statsSection = document.getElementById('stats');
+const observer = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { animateCounters(); observer.disconnect(); }
+}, { threshold: 0.3 });
+observer.observe(statsSection);
+
+// Canvas particle network
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  function Particle() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.r = Math.random() * 2 + 0.5;
+    this.alpha = Math.random() * 0.5 + 0.2;
+  }
+
+  function init() {
+    resize();
+    particles = Array.from({ length: 80 }, () => new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // Gradient overlay
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, 'rgba(0,40,100,0.4)');
+    grad.addColorStop(1, 'rgba(0,20,60,0.2)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,212,255,${p.alpha})`;
+      ctx.fill();
+    });
+
+    // Lines between nearby particles
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,102,255,${0.15 * (1 - dist/120)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init();
+  draw();
+})();
+</script>
+</body>
+</html>

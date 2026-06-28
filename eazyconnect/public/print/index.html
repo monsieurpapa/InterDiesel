@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAZY KONNECT — Impression Vouchers</title>
+<style>
+:root{--blue:#0066FF;--cyan:#00D4FF;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#1a1a2e;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;padding:1.5rem;}
+#toolbar{background:#0d0d1a;border:1px solid #2a2a4a;border-radius:10px;padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+#toolbar h2{font-size:1rem;font-weight:700;}
+#toolbar p{font-size:.8rem;color:#888;margin-top:.2rem;}
+.toolbar-actions{display:flex;gap:.75rem;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-print{background:var(--blue);color:#fff;}
+.btn-print:hover{background:#0052cc;}
+.btn-ghost{background:transparent;color:#ccc;border:1px solid #333;}
+.btn-ghost:hover{border-color:#999;color:#fff;}
+
+/* VOUCHER GRID */
+#vouchers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;max-width:780px;margin:0 auto;}
+
+/* VOUCHER CARD */
+.voucher{background:#fff;color:#111;border-radius:8px;padding:1rem;position:relative;overflow:hidden;page-break-inside:avoid;}
+.voucher::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--c,#0066FF);}
+.v-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.625rem;}
+.v-logo{font-size:.9rem;font-weight:900;letter-spacing:-.02em;}
+.v-logo span{color:var(--c,#0066FF);}
+.v-pkg{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--c,#0066FF);background:color-mix(in srgb,var(--c,#0066FF) 12%,transparent);padding:.15rem .45rem;border-radius:3px;}
+.v-code{font-family:monospace;font-size:1.5rem;font-weight:900;letter-spacing:.15em;text-align:center;padding:.5rem .25rem;color:#111;background:#f4f4f8;border-radius:6px;margin:.5rem 0;}
+.v-meta{display:flex;justify-content:space-between;align-items:center;font-size:.65rem;}
+.v-duration{font-weight:700;color:#333;}
+.v-price{font-weight:800;color:var(--c,#0066FF);font-size:.85rem;}
+.v-divider{border:none;border-top:1px dashed #ddd;margin:.5rem 0;}
+.v-instructions{font-size:.6rem;color:#666;line-height:1.5;}
+.v-instructions strong{color:#333;}
+.v-footer{display:flex;justify-content:space-between;align-items:center;margin-top:.5rem;font-size:.6rem;color:#aaa;}
+
+/* Loading */
+#loading{text-align:center;padding:4rem;color:#888;}
+
+/* PRINT STYLES */
+@media print {
+  body{background:#fff;padding:0;}
+  #toolbar{display:none;}
+  #vouchers-grid{max-width:100%;grid-template-columns:repeat(2,1fr);gap:.5rem;padding:.25rem;}
+  .voucher{border:1px solid #ddd;box-shadow:none;}
+  @page{margin:1cm;size:A4;}
+}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <div>
+    <h2 id="batch-title">Chargement du lot…</h2>
+    <p id="batch-info"></p>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn btn-ghost" onclick="history.back()">← Retour</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Imprimer</button>
+  </div>
+</div>
+
+<div id="loading">Chargement des vouchers…</div>
+<div id="vouchers-grid" style="display:none"></div>
+
+<script>
+const PKG_COLORS = {
+  express:   '#FF6B35',
+  standard:  '#00D4FF',
+  journee:   '#10B981',
+  quotidien: '#6366F1',
+  hebdo:     '#F59E0B',
+};
+
+function fmtDuration(m){
+  if(m<60)return`${m} min`;
+  if(m<1440)return`${m/60}h`;
+  if(m<10080)return`${m/1440} jour${m/1440>1?'s':''}`;
+  return`${m/10080} semaine${m/10080>1?'s':''}`;
+}
+
+function fmtFC(n){return Number(n).toLocaleString('fr-CD')+' FC';}
+
+function steps(pkg){
+  return`<strong>1.</strong> WiFi: EAZY-KONNECT &nbsp;|&nbsp; <strong>2.</strong> Ouvrez votre navigateur &nbsp;|&nbsp; <strong>3.</strong> Entrez le code`;
+}
+
+async function load(){
+  // Get batchId from URL path or query
+  const path = location.pathname.split('/');
+  const batchId = path[path.length-1] !== 'index.html' && path[path.length-1] !== '' && path[path.length-1] !== 'print'
+    ? path[path.length-1]
+    : new URLSearchParams(location.search).get('batch');
+
+  if(!batchId){
+    document.getElementById('loading').innerHTML='<p style="color:#f66">Aucun lot spécifié. Retournez à l\'administration.</p>';
+    return;
+  }
+
+  const token = localStorage.getItem('ek-token') || '';
+  try {
+    const res = await fetch(`/api/batches/${batchId}`,{headers:{'Authorization':'Bearer '+token}});
+    if(res.status===401){
+      document.getElementById('loading').innerHTML='<p style="color:#f66">Connectez-vous d\'abord à l\'administration.</p><br><a href="/admin" style="color:#0066FF">→ Aller à l\'admin</a>';
+      return;
+    }
+    const data = await res.json();
+    if(!data||!data.batch){document.getElementById('loading').textContent='Lot introuvable';return;}
+
+    document.getElementById('batch-title').textContent=`Lot ${data.batch.id} — ${data.batch.pkg_name}`;
+    document.getElementById('batch-info').textContent=`${data.vouchers.length} vouchers · ${fmtFC(data.batch.price_fc)} chacun · Durée : ${fmtDuration(data.batch.duration_minutes)}`;
+
+    const color = data.batch.color || '#0066FF';
+    const grid = document.getElementById('vouchers-grid');
+    grid.style.display='grid';
+    document.getElementById('loading').style.display='none';
+
+    grid.innerHTML = data.vouchers.map(v => `
+      <div class="voucher" style="--c:${color}">
+        <div class="v-header">
+          <div class="v-logo">EAZY<span>KONNECT</span></div>
+          <div class="v-pkg">${data.batch.pkg_name}</div>
+        </div>
+        <div class="v-code">${v.code}</div>
+        <div class="v-meta">
+          <span class="v-duration">⏱ ${fmtDuration(data.batch.duration_minutes)}</span>
+          <span class="v-price">${fmtFC(data.batch.price_fc)}</span>
+        </div>
+        <hr class="v-divider">
+        <div class="v-instructions">${steps()}</div>
+        <div class="v-footer">
+          <span>Q/Himbi-Alanine, Goma</span>
+          <span>1 appareil · 1 utilisation</span>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Erreur de chargement: '+e.message;
+  }
+}
+
+load();
+</script>
+</body>
+</html>

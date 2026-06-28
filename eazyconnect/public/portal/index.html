@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EAZY KONNECT — Connexion Internet</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0A0E1A;color:#E2E8F0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;}
+.card{background:#0F1729;border:1px solid #1E2A3D;border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:400px;text-align:center;}
+.logo{font-size:1.6rem;font-weight:900;letter-spacing:-.03em;margin-bottom:.25rem;}
+.logo .k{color:#00D4FF;}
+.tagline{color:#4B5563;font-size:.8rem;margin-bottom:2rem;}
+.status-icon{width:72px;height:72px;border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:2rem;background:#1a2035;}
+.status-icon.locked{background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.2);}
+.status-icon.connected{background:rgba(16,185,129,.1);border:2px solid rgba(16,185,129,.2);}
+h2{font-size:1.2rem;font-weight:700;margin-bottom:.5rem;}
+.sub{color:#6B7280;font-size:.85rem;margin-bottom:1.75rem;line-height:1.5;}
+.input-wrap{position:relative;margin-bottom:1rem;}
+.code-input{width:100%;background:#060A12;border:2px solid #1E2A3D;color:#fff;font-size:1.4rem;font-family:monospace;font-weight:700;letter-spacing:.2em;text-align:center;padding:.875rem 1rem;border-radius:10px;outline:none;transition:border-color .2s;text-transform:uppercase;}
+.code-input:focus{border-color:#0066FF;}
+.code-input::placeholder{font-size:1rem;letter-spacing:.05em;color:#374151;font-weight:400;}
+.btn{width:100%;padding:.875rem;border-radius:10px;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+.btn-connect{background:#0066FF;color:#fff;}
+.btn-connect:hover{background:#0052cc;}
+.btn-connect:disabled{background:#1E2A3D;color:#4B5563;cursor:not-allowed;}
+.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#FCA5A5;border-radius:8px;padding:.75rem 1rem;font-size:.875rem;margin-bottom:1rem;display:none;}
+/* Countdown */
+.countdown-wrap{margin-top:1.5rem;}
+.countdown-label{font-size:.75rem;color:#6B7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.countdown{font-size:2.8rem;font-weight:900;font-variant-numeric:tabular-nums;color:#00D4FF;letter-spacing:.05em;}
+.progress-bar{height:6px;background:#1E2A3D;border-radius:3px;margin-top:1rem;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#10B981,#00D4FF);border-radius:3px;transition:width 1s linear;}
+.pkg-name{font-size:.9rem;color:#9CA3AF;margin-top:.75rem;}
+/* Footer */
+.footer{margin-top:2rem;color:#374151;font-size:.75rem;text-align:center;line-height:1.6;}
+/* Spinner */
+.spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="card" id="login-view">
+  <div class="logo">EAZY<span class="k">KONNECT</span></div>
+  <div class="tagline">Portail d'accès Internet</div>
+
+  <div class="status-icon locked" id="status-icon">🔒</div>
+  <h2>Connexion requise</h2>
+  <p class="sub">Entrez le code de votre voucher pour accéder à Internet.<br>Achetez un voucher auprès d'un distributeur local.</p>
+
+  <div class="error" id="error-msg"></div>
+
+  <div class="input-wrap">
+    <input class="code-input" id="code-input" type="text" maxlength="9"
+      placeholder="XXXX-XXXX"
+      autocomplete="off" autocapitalize="characters"
+      oninput="formatCode(this)"
+      onkeyup="if(event.key==='Enter')connect()">
+  </div>
+
+  <button class="btn btn-connect" id="connect-btn" onclick="connect()">
+    <div class="spinner" id="spinner"></div>
+    <span id="btn-text">Se connecter</span>
+  </button>
+</div>
+
+<div class="card" id="success-view" style="display:none">
+  <div class="logo">EAZY<span class="k">KONNECT</span></div>
+  <div class="tagline">Vous êtes connecté !</div>
+
+  <div class="status-icon connected">📶</div>
+  <h2>Connexion active</h2>
+  <p class="sub" id="success-pkg">–</p>
+
+  <div class="countdown-wrap">
+    <div class="countdown-label">Temps restant</div>
+    <div class="countdown" id="countdown">–</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:100%"></div></div>
+    <div class="pkg-name" id="expires-at"></div>
+  </div>
+</div>
+
+<div class="footer">
+  EAZY KONNECT © 2026 · Q/Himbi-Alanine, Goma<br>
+  En cas de problème, contactez votre revendeur.
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const MAC = params.get('mac') || '';
+const IP  = params.get('ip')  || '';
+const URL_ORIG = params.get('url') || params.get('link-orig') || '';
+
+let totalMs = 0, remainMs = 0, countdownTimer = null;
+
+function formatCode(input) {
+  let v = input.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (v.length > 4) v = v.slice(0,4) + '-' + v.slice(4,8);
+  input.value = v;
+}
+
+async function connect() {
+  const code = document.getElementById('code-input').value.trim();
+  if (!code || code.length < 4) { showError('Entrez votre code de voucher'); return; }
+  setLoading(true);
+  hideError();
+  try {
+    const res = await fetch('/portal/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, mac: MAC, ip: IP, url: URL_ORIG })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) { showError(data.error || 'Code invalide'); setLoading(false); return; }
+
+    // If MikroTik is integrated, redirect through its login
+    if (data.loginUrl) {
+      setTimeout(() => { window.location.href = data.loginUrl; }, 800);
+      return;
+    }
+
+    // Standalone mode — show countdown
+    setLoading(false);
+    showSuccess(data.msLeft, data.packageName, data.expiresAt);
+  } catch(e) {
+    showError('Erreur réseau. Réessayez.');
+    setLoading(false);
+  }
+}
+
+function showSuccess(msLeft, pkgName, expiresAt) {
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('success-view').style.display = 'block';
+  document.getElementById('success-pkg').textContent = 'Forfait : ' + (pkgName || '–');
+  if (expiresAt) {
+    const exp = new Date(expiresAt);
+    document.getElementById('expires-at').textContent = 'Expire le ' + exp.toLocaleString('fr-CD');
+  }
+  totalMs = msLeft;
+  remainMs = msLeft;
+  startCountdown();
+}
+
+function startCountdown() {
+  clearInterval(countdownTimer);
+  updateCountdown();
+  countdownTimer = setInterval(() => {
+    remainMs -= 1000;
+    if (remainMs <= 0) {
+      remainMs = 0;
+      clearInterval(countdownTimer);
+      document.getElementById('countdown').textContent = '00:00:00';
+      document.getElementById('progress').style.width = '0%';
+      document.getElementById('success-view').style.display = 'none';
+      document.getElementById('login-view').style.display = 'block';
+      showError('Votre connexion a expiré. Achetez un nouveau voucher pour continuer.');
+      document.getElementById('code-input').value = '';
+    } else {
+      updateCountdown();
+    }
+  }, 1000);
+}
+
+function updateCountdown() {
+  const h = Math.floor(remainMs / 3600000);
+  const m = Math.floor((remainMs % 3600000) / 60000);
+  const s = Math.floor((remainMs % 60000) / 1000);
+  document.getElementById('countdown').textContent =
+    String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (totalMs > 0) {
+    document.getElementById('progress').style.width = ((remainMs / totalMs) * 100).toFixed(1) + '%';
+  }
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('connect-btn');
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btn-text').textContent = on ? 'Connexion…' : 'Se connecter';
+  btn.disabled = on;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+
+// Auto-focus
+window.addEventListener('load', () => document.getElementById('code-input').focus());
+</script>
+</body>
+</html>
