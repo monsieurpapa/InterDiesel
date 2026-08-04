@@ -1,0 +1,226 @@
+[
+  {
+    "reference": "P0001",
+    "description": "TRANSPORT BUNIA- DURBA",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0002",
+    "description": "TRANSPORT BUNIA- ARIWARA",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0003",
+    "description": "TRANSPORT BUNIA- ISIRO",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0004",
+    "description": "TRANSPORT BUNIA- ARU",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0005",
+    "description": "TRANSPORT BUNIA- IBWOKOLO",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0006",
+    "description": "TRANSPORT BUNIA- BENI",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0007",
+    "description": "EFFET PERSONNEL DR KINSHASA KISANGANI",
+    "prixUnitaire": 11025,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0008",
+    "description": "HEBERGEMENT COPS KABUYA BUNIA (Pour Deux mois)",
+    "prixUnitaire": 1225000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0009",
+    "description": "LOCATION ENTREPOT POUR 6 MOIS (Du 22 Avril au 21 Octobre 2026)",
+    "prixUnitaire": 3700,
+    "tauxTva": 0,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0010",
+    "description": "ABONNEMENT TV SAT/CABLE/ LA-BUN-14456",
+    "prixUnitaire": 50,
+    "tauxTva": 0,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0011",
+    "description": "ABONNEMENT TV SAT/CABLE/ LA-BUN-14455",
+    "prixUnitaire": 50,
+    "tauxTva": 0,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0012",
+    "description": "ABONNEMENT TV SAT/CABLE/ LA-BUN-14454",
+    "prixUnitaire": 50,
+    "tauxTva": 0,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0013",
+    "description": "MANUTENTION",
+    "prixUnitaire": 383500,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0014",
+    "description": "STATIONNEMENT",
+    "prixUnitaire": 368750,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0015",
+    "description": "TRANSPORT BUNIA- KISANGANI de 2000 Accessoires et paraboles (1 accessoir pèse 4,5 Kgs) soir 9000 Kgs",
+    "prixUnitaire": 2450,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0016",
+    "description": "TRANSPORT BUNIA - BUTEMBO",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0017",
+    "description": "TRANSPORT  BUNIA - MAMBASA",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0018",
+    "description": "TRANSPORT BUNIA -  PK 51",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0019",
+    "description": "TRANSPORT BUNIA -  MONGBALU",
+    "prixUnitaire": 17400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0020",
+    "description": "HEBERGEMENT COPS KABUYA KISANGANI (Pour 1 mois)",
+    "prixUnitaire": 1225000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0021",
+    "description": "LOCATION ENTREPOT CANAL + OCTOBRE - DECEMBRE 2025",
+    "prixUnitaire": 2000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0022",
+    "description": "TRANSPORT  BUNIA - MAHAGI",
+    "prixUnitaire": 17400,
+    "tauxTva": 0,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0023",
+    "description": "AVANCE COMMISSION CPDV JUILLET 2026",
+    "prixUnitaire": 38807008.62,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0024",
+    "description": "TRANSPORT 2000 TERMINAUX KIN - BUNIA DE 1000Kgs",
+    "prixUnitaire": 9400,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0025",
+    "description": "TRANSPORT 1000 TERMINAUX  KIN - KISANGANI DE 500Kgs",
+    "prixUnitaire": 5875,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0026",
+    "description": "DEMENAGEMENT ENTREPOT CANAL +",
+    "prixUnitaire": 940000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0027",
+    "description": "PERMIS D'EXPLOITATION ",
+    "prixUnitaire": 705000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0028",
+    "description": "DESCENTE TERRAIN ANGENT DE L'ENVIRONNEMENT",
+    "prixUnitaire": 470000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0029",
+    "description": "CADENAS ",
+    "prixUnitaire": 58750,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0030",
+    "description": "COMMISIONNEMENT JPS 27%",
+    "prixUnitaire": 470000,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0031",
+    "description": "TRANSPORT 1 BUNIA- KISANGANI de 1500 Accessoires et paraboles (1 accessoir pèse 4,5 Kgs) soit 6750 Kgs",
+    "prixUnitaire": 2450,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  },
+  {
+    "reference": "P0032",
+    "description": "TRANSPORT 2 BUNIA- KISANGANI de 1500 Accessoires et paraboles (1 accessoir pèse 4,5 Kgs) soit 6750 Kgs",
+    "prixUnitaire": 2450,
+    "tauxTva": 0.16,
+    "coutAchat": 0
+  }
+]

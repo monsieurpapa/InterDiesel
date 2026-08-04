@@ -1,0 +1,41 @@
+[
+  {
+    "code": "C00001",
+    "type": "SOCIETE",
+    "nom": "CANAL + RDC",
+    "adresse": "130, AV KWANGO, Commune de la Gombe/KINSHASA",
+    "nImpot": "A1205381N",
+    "ville": "KINSHASA",
+    "telephone": "996011601",
+    "idNational": "01-H5300-N66033Z",
+    "rccm": "14-B-3042",
+    "email": null,
+    "remarques": null
+  },
+  {
+    "code": "C00002",
+    "type": "Agence UN",
+    "nom": "FAO/RDC",
+    "adresse": "Boulevard du 30 juin, N° 936, BP. 16096 Kinshasa/Gombe",
+    "nImpot": "- ",
+    "ville": "BUNIA",
+    "telephone": "24381260608",
+    "idNational": null,
+    "rccm": null,
+    "email": "FAO_@fao.org",
+    "remarques": null
+  },
+  {
+    "code": "C00003",
+    "type": "ONG I",
+    "nom": "SOLIDARITES INTERNATIONAL",
+    "adresse": "Bureau Bunia/ Avenue Kasavubu, N°3743, Q. Lumumba",
+    "nImpot": null,
+    "ville": "BUNIA",
+    "telephone": "24381360655",
+    "idNational": null,
+    "rccm": null,
+    "email": "bun.log@solidarites-rdc.org/bun.gest.appro@solidar",
+    "remarques": null
+  }
+]

@@ -1,0 +1,472 @@
+[
+  {
+    "dateFacture": "2026-04-28",
+    "dateEnvoi": null,
+    "natureOperation": "REMBOURSEMENT 50% TRANS. FACT JPS N°034",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100049404",
+    "montant": 6896000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-04-27",
+    "dateEnvoi": null,
+    "natureOperation": "REMBOURSEMENT FRAIS JPS FACT N°  024",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100048821",
+    "montant": 1392000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-02-24",
+    "dateEnvoi": null,
+    "natureOperation": "FRAIS ADMINISTRATIF DGRPI BUNIA",
+    "numeroFactureExterne": "FC/CD02016040/1­19/2026",
+    "numeroBdc": "4100038148",
+    "montant": 2880000,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-02-17",
+    "dateEnvoi": null,
+    "natureOperation": "EXPEDITION EFFETS DR MAKTHAR GOMA-LUBUM",
+    "numeroFactureExterne": "FC/CD02016040/1­8/2026",
+    "numeroBdc": "4100036806",
+    "montant": 6600000,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2023-10-24",
+    "dateEnvoi": null,
+    "natureOperation": "CHALLENGE REABO 1ERE EC SEPTEMBRE 2023",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4000967236",
+    "montant": 50,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-14",
+    "dateEnvoi": null,
+    "natureOperation": "LOYER ENTREPOT BUNIA",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016562",
+    "montant": 345,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-14",
+    "dateEnvoi": null,
+    "natureOperation": "LOYER ENTREPOT BUNIA",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016562",
+    "montant": 345,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-14",
+    "dateEnvoi": null,
+    "natureOperation": "LOYER ENTREPOT BUNIA",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016562",
+    "montant": 345,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-06-19",
+    "dateEnvoi": null,
+    "natureOperation": "Paiement salaire VAD Mai 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100058090",
+    "montant": 320,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-23",
+    "dateEnvoi": null,
+    "natureOperation": "Paiement salaire VAD Avril 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100053246",
+    "montant": 80,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-04-17",
+    "dateEnvoi": null,
+    "natureOperation": "Paiement salire VAD février & Mars 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100047578",
+    "montant": 180,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-10-23",
+    "dateEnvoi": null,
+    "natureOperation": "REMBOURSEMENT 50% FRAIS TRANSPORT JPS",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100014610",
+    "montant": 5452000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-18",
+    "dateEnvoi": null,
+    "natureOperation": "TA 1000 PA BUN-KIN deuxieme  lot",
+    "numeroFactureExterne": "FC/CD02016040/1­70/2026",
+    "numeroBdc": "4100052048",
+    "montant": 32781000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-18",
+    "dateEnvoi": null,
+    "natureOperation": "TA 1000 PA BUN-KIN PREMIER LOT",
+    "numeroFactureExterne": "FC/CD02016040/1­72/2026",
+    "numeroBdc": "4100052049",
+    "montant": 32781000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-18",
+    "dateEnvoi": null,
+    "natureOperation": "TA 1000 PA BUN-KIN troisièm lot",
+    "numeroFactureExterne": "FC/CD02016040/1­70/2026",
+    "numeroBdc": "4100052050",
+    "montant": 32781000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-03-07",
+    "dateEnvoi": "2026-03-09",
+    "natureOperation": "TA 3000  TERMINAUX BUN-KIN",
+    "numeroFactureExterne": "FC/CD02016040/1-32/2026",
+    "numeroBdc": "4100039935",
+    "montant": 18750000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-03-04",
+    "dateEnvoi": "2026-03-09",
+    "natureOperation": "TA 2500 TERMINAUX 1LOT BUN-LUB",
+    "numeroFactureExterne": "FC/CD02016040/1-29/2026",
+    "numeroBdc": "4100039511",
+    "montant": 20312500,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-12-15",
+    "dateEnvoi": null,
+    "natureOperation": "NETTOYAGE ,RANGEMENT ET MANUTENTION",
+    "numeroFactureExterne": null,
+    "numeroBdc": "4100025173",
+    "montant": 600,
+    "devise": "USD",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-07",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 05 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016483",
+    "montant": 969000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-07",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 06 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016483",
+    "montant": 117600,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-01-07",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 06 2026",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800016483",
+    "montant": 117600,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 08 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 860200,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 08 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 860200,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 08 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 991100,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 08 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 1907400,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 08 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 1589500,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2025-03-11",
+    "dateEnvoi": null,
+    "natureOperation": "PRESTATION ANTENNISTE 09 2025",
+    "numeroFactureExterne": null,
+    "numeroBdc": "3800015947",
+    "montant": 1776500,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-25",
+    "dateEnvoi": null,
+    "natureOperation": "EFFET PERSONNEL DR KINSHASA KISANGANI",
+    "numeroFactureExterne": "FC/CD02016040/1­78/2026",
+    "numeroBdc": "4100058631",
+    "montant": 12789000,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-27",
+    "dateEnvoi": "2026-05-27",
+    "natureOperation": "HEBERGEMENT COPS KABUYA BUNIA (Pour Deux mois)",
+    "numeroFactureExterne": "F00025",
+    "numeroBdc": null,
+    "montant": 4263000,
+    "devise": "CDF",
+    "statut": "ATTENTE_BDC"
+  },
+  {
+    "dateFacture": "2026-06-08",
+    "dateEnvoi": "2026-06-08",
+    "natureOperation": "TRANSPORT BUNIA- KISANGANI de 2000 Accessoires et paraboles (1 accessoir pèse 4,5 Kgs) soir 9000 Kgs",
+    "numeroFactureExterne": "F00028",
+    "numeroBdc": null,
+    "montant": 24554880,
+    "devise": "CDF",
+    "statut": "ATTENTE_BDC"
+  },
+  {
+    "dateFacture": "2025-09-15",
+    "dateEnvoi": "2025-09-15",
+    "natureOperation": "LOCATION ENTREPOT CANAL + OCTOBRE - DECEMBRE 2025",
+    "numeroFactureExterne": "F00029",
+    "numeroBdc": null,
+    "montant": 6960,
+    "devise": "USD",
+    "statut": "ATTENTE_BDC"
+  },
+  {
+    "dateFacture": "2026-06-26",
+    "dateEnvoi": "2026-06-26",
+    "natureOperation": "TRANSPORT 2000 TERMINAUX KIN - BUNIA DE 1000Kgs & TRANSPORT 1000 TERMINAUX  KIN - KISANGANI DE 500Kgs",
+    "numeroFactureExterne": "FC/CD02016040/1-83/2026",
+    "numeroBdc": "4100061092",
+    "montant": 14311500,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-06-24",
+    "dateEnvoi": "2026-06-25",
+    "natureOperation": "FACTURE LOYER ENTREPOT BUNIA T3 2026",
+    "numeroFactureExterne": "FC/CD02016040/1­82/2026",
+    "numeroBdc": "3800016562",
+    "montant": 17052000,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-15",
+    "dateEnvoi": "2026-05-15",
+    "natureOperation": "FACTURE REMBOURSEMENT TRANSPORT MAT 3 PARK GE ",
+    "numeroFactureExterne": "FC/CD02016040/1-68/2026",
+    "numeroBdc": "4100051680",
+    "montant": 6189760,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-15",
+    "dateEnvoi": "2026-05-15",
+    "natureOperation": "FACTURE REMBOURSEMENT TRANSPORT MAT 3 PARK GE ",
+    "numeroFactureExterne": "FC/CD02016040/1-66/2026",
+    "numeroBdc": "4100051662",
+    "montant": 6182800,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-09",
+    "dateEnvoi": "2026-05-09",
+    "natureOperation": "FACTURE REMBOURSEMENT TRANSPORT ",
+    "numeroFactureExterne": "FC/CD02016040/1-53/2026",
+    "numeroBdc": "4100050196",
+    "montant": 12200880,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-03-01",
+    "dateEnvoi": "2026-03-10",
+    "natureOperation": "GRANDE MESSE BUNIA VISITE NOUVEAU DR",
+    "numeroFactureExterne": null,
+    "numeroBdc": null,
+    "montant": 2175000,
+    "devise": "CDF",
+    "statut": "A_COMPTABILISER"
+  },
+  {
+    "dateFacture": "2026-05-09",
+    "dateEnvoi": "2026-05-09",
+    "natureOperation": "FACTURE REMBOURSEMENT TRANSPORT ",
+    "numeroFactureExterne": "FC/CD02016040/1-49/2026",
+    "numeroBdc": "4100048845",
+    "montant": 2338560,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-07-22",
+    "dateEnvoi": "2026-07-22",
+    "natureOperation": "Facture_NORMALISEE PRESTATION ANTENNISTE MAI JUIN 2026 BDC ",
+    "numeroFactureExterne": "FC/CD02016040/188/2026",
+    "numeroBdc": "3800016483",
+    "montant": 5774480,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-07-22",
+    "dateEnvoi": "2026-07-22",
+    "natureOperation": "Facture_NORMALISEE PRESTATION ANTENNISTE AVRIL MAI 2026 BDC ",
+    "numeroFactureExterne": "FC/CD02016040/190/2026",
+    "numeroBdc": "3800016484",
+    "montant": 1266024,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-06-24",
+    "dateEnvoi": "2026-06-24",
+    "natureOperation": "FACTURE PAIEMENT VAD FEVRIER MARS 2026 BDC",
+    "numeroFactureExterne": "FC/CD02016040/181/2026",
+    "numeroBdc": "4100047578",
+    "montant": 490680,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-06-24",
+    "dateEnvoi": "2026-06-24",
+    "natureOperation": "FACTURE PAIEMENT VAD AVRIL 2026 BDC",
+    "numeroFactureExterne": "FC/CD02016040/180/2026",
+    "numeroBdc": "4100053246",
+    "montant": 218080,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-06-24",
+    "dateEnvoi": "2026-06-24",
+    "natureOperation": "FACTURE PAIEMENT VAD MAI 2026 BDC",
+    "numeroFactureExterne": "FC/CD02016040/179/2026",
+    "numeroBdc": "4100058090",
+    "montant": 872320,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-16",
+    "dateEnvoi": "2026-05-16",
+    "natureOperation": "FACTURE TRANSPORT EFFET PERSONNEL ABRAHAM BDC 4100051808",
+    "numeroFactureExterne": "FC/CD02016040/169/2026",
+    "numeroBdc": "4100051808",
+    "montant": 23925000,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-04-15",
+    "dateEnvoi": "2026-04-15",
+    "natureOperation": "FACTURE HEBERGEMENT ERIC KABUYA NUM 04/2026 BDC 4100046275",
+    "numeroFactureExterne": "FC/CD02016040/140/2026",
+    "numeroBdc": "4100046275",
+    "montant": 4350000,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-06-23",
+    "dateEnvoi": "2026-06-23",
+    "natureOperation": "FACTURE TRANSPORT EFFET PERSONNEL DR BDC 4100058631",
+    "numeroFactureExterne": "FC/CD02016040/1­78/2026",
+    "numeroBdc": "4100058631",
+    "montant": 12789000,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  },
+  {
+    "dateFacture": "2026-05-15",
+    "dateEnvoi": "2026-05-15",
+    "natureOperation": "FACTURE REMBOURSEMENT TRANSPORT 2 MAT PAR GE BDC 4100051662",
+    "numeroFactureExterne": "FC/CD02016040/167/2026",
+    "numeroBdc": "4100051662",
+    "montant": 24759040,
+    "devise": "CDF",
+    "statut": "NON_PAYE"
+  }
+]

@@ -1,0 +1,153 @@
+[
+  {
+    "numero": "F00024",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-05-25",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0007",
+        "quantite": 1500
+      }
+    ]
+  },
+  {
+    "numero": "F00025",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-05-27",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0008",
+        "quantite": 2
+      },
+      {
+        "serviceReference": "P0020",
+        "quantite": 1
+      }
+    ]
+  },
+  {
+    "numero": "F00026",
+    "type": "FACTURE",
+    "clientCode": "C00002",
+    "dateFacture": "2026-06-08",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0009",
+        "quantite": 6
+      }
+    ]
+  },
+  {
+    "numero": "F00027",
+    "type": "FACTURE",
+    "clientCode": "C00003",
+    "dateFacture": "2026-06-04",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0010",
+        "quantite": 1
+      },
+      {
+        "serviceReference": "P0011",
+        "quantite": 1
+      },
+      {
+        "serviceReference": "P0012",
+        "quantite": 1
+      }
+    ]
+  },
+  {
+    "numero": "F00028",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-06-08",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0.04,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0015",
+        "quantite": 9000
+      }
+    ]
+  },
+  {
+    "numero": "F00029",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2025-09-15",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0021",
+        "quantite": 3
+      }
+    ]
+  },
+  {
+    "numero": "F00030",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-06-23",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0023",
+        "quantite": 1
+      }
+    ]
+  },
+  {
+    "numero": "F00031",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-06-26",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0024",
+        "quantite": 1000
+      },
+      {
+        "serviceReference": "P0025",
+        "quantite": 500
+      }
+    ]
+  },
+  {
+    "numero": "F00032",
+    "type": "FACTURE",
+    "clientCode": "C00001",
+    "dateFacture": "2026-07-22",
+    "moyenReglementCode": "VIREMENT",
+    "remisePct": 0,
+    "devise": "CDF",
+    "lignes": [
+      {
+        "serviceReference": "P0023",
+        "quantite": 1
+      }
+    ]
+  }
+]

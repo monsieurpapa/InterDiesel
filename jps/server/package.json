@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "db:import-legacy": "tsx src/db/import-legacy.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
