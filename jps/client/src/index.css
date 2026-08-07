@@ -467,17 +467,24 @@ section h2 {
   gap: 0.4rem;
 }
 
-.actions-cell button {
+.actions-cell button,
+.actions-cell a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   border: 1px solid var(--border);
   background: #fff;
   border-radius: var(--radius-sm);
   padding: 0.32rem 0.6rem;
   font-size: 0.78rem;
   font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
   cursor: pointer;
 }
 
-.actions-cell button:hover {
+.actions-cell button:hover,
+.actions-cell a:hover {
   border-color: var(--border-strong);
   background: #f8f9fc;
 }
@@ -799,4 +806,259 @@ textarea:focus-visible {
 .sidebar-logout-btn:hover {
   background: var(--sidebar-hover);
   color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Barre d'outils des tableaux — recherche + filtres
+   --------------------------------------------------------------------------- */
+
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+  min-width: 220px;
+  color: var(--text-muted);
+}
+
+.search-field input {
+  border: none;
+  outline: none;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--text);
+  background: transparent;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.1rem;
+  display: flex;
+}
+
+.search-clear:hover {
+  color: var(--text);
+}
+
+.filter-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.83rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* ---------------------------------------------------------------------------
+   Vue d'impression de facture / proforma
+   --------------------------------------------------------------------------- */
+
+.invoice-print-screen {
+  min-height: 100vh;
+  background: #eef0f4;
+  padding: 2rem 1rem 4rem;
+}
+
+.invoice-toolbar {
+  max-width: 780px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.invoice-toolbar a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.invoice-toolbar a:hover {
+  color: var(--text);
+}
+
+.invoice-print-page {
+  max-width: 780px;
+  margin: 0 auto;
+  background: #fff;
+  color: #111827;
+  padding: 3rem;
+  box-shadow: var(--shadow-modal);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #111827;
+  margin-bottom: 1.5rem;
+}
+
+.invoice-entreprise {
+  font-size: 0.82rem;
+  color: #374151;
+}
+
+.invoice-entreprise-nom {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.invoice-meta {
+  text-align: right;
+  font-size: 0.82rem;
+  color: #374151;
+}
+
+.invoice-titre {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #111827;
+}
+
+.invoice-numero {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.invoice-client {
+  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.invoice-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  margin-bottom: 0.3rem;
+}
+
+.invoice-client-nom {
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.invoice-lignes {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.invoice-lignes th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  border-bottom: 1px solid #111827;
+  padding: 0.5rem 0.4rem;
+}
+
+.invoice-lignes td {
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
+}
+
+.invoice-lignes .num,
+.invoice-lignes th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.invoice-totaux {
+  margin-left: auto;
+  width: 280px;
+  font-size: 0.88rem;
+  margin-bottom: 1.75rem;
+}
+
+.invoice-totaux > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  color: #374151;
+}
+
+.invoice-total-ttc {
+  border-top: 2px solid #111827;
+  margin-top: 0.3rem;
+  padding-top: 0.5rem !important;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.invoice-paiement {
+  font-size: 0.8rem;
+  color: #4b5563;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.invoice-footer {
+  text-align: center;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #6b7280;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .invoice-print-screen {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+
+  .invoice-print-page {
+    box-shadow: none;
+    border-radius: 0;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
 }

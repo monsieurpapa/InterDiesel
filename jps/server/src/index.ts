@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { crudRouter } from "./routes/crud.js";
 import { facturesRouter } from "./routes/factures.js";
 import { dashboardRouter } from "./routes/dashboard.js";
+import { entrepriseRouter } from "./routes/entreprise.js";
 import { authRouter } from "./routes/auth.js";
 import { utilisateursRouter } from "./routes/utilisateurs.js";
 import { requireAuth, requirePasswordAlreadyChanged, requireModule, requireAdmin } from "./auth/middleware.js";
@@ -60,6 +61,7 @@ app.use("/api/categories-activite", ...protect("referentiel"), crudRouter(catego
 
 app.use("/api/factures", ...protect("facturation"), facturesRouter);
 app.use("/api/dashboard", requireAuth, requirePasswordAlreadyChanged, dashboardRouter);
+app.use("/api/entreprise", requireAuth, requirePasswordAlreadyChanged, entrepriseRouter);
 app.use("/api/utilisateurs", requireAuth, requirePasswordAlreadyChanged, requireAdmin, utilisateursRouter);
 
 const port = Number(process.env.PORT) || 4000;

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { factures, lignesFacture, encaissements } from "../db/schema.js";
+import { factures, lignesFacture, encaissements, clients } from "../db/schema.js";
 
 export const facturesRouter = Router();
 
@@ -13,6 +13,7 @@ facturesRouter.get("/", async (_req, res) => {
 facturesRouter.get("/:id", async (req, res) => {
   const [facture] = await db.select().from(factures).where(eq(factures.id, req.params.id));
   if (!facture) return res.status(404).json({ error: "Introuvable" });
+  const [client] = await db.select().from(clients).where(eq(clients.id, facture.clientId));
   const lignes = await db
     .select()
     .from(lignesFacture)
@@ -21,7 +22,7 @@ facturesRouter.get("/:id", async (req, res) => {
     .select()
     .from(encaissements)
     .where(eq(encaissements.factureId, req.params.id));
-  res.json({ ...facture, lignes, paiements });
+  res.json({ ...facture, client, lignes, paiements });
 });
 
 // Crée une facture avec ses lignes en une seule requête (formulaire du front).

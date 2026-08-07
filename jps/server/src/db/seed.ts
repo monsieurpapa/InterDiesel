@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import postgres from "postgres";
 import { db, client } from "./index.js";
-import { canauxPaiement, categoriesActivite, utilisateurs } from "./schema.js";
+import { canauxPaiement, categoriesActivite, utilisateurs, entreprise } from "./schema.js";
 import { generateTempPassword, hashPassword } from "../auth/crypto.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,6 +54,24 @@ async function main() {
   }
 
   console.log("Données de référence insérées.");
+
+  const existingEntreprise = await db.select().from(entreprise);
+  if (existingEntreprise.length === 0) {
+    await db.insert(entreprise).values({
+      nom: "JPS DIEU MERCI",
+      adresse: "N° 122, C/MBUNYA, Q. LUMUMBA, AV DELIBERATION",
+      ville: "VILLE DE BUNIA",
+      telephone: "0997785896 - 0810099378",
+      nImpot: "A1516146S",
+      idNational: "4-93-N18362B",
+      rccm: "RCCM CD/BIA/RCCM-17-A-1193",
+      coordonneesBancaires: "1252-00584272701-19/CDF/RAWBANK/ETS MSO JPS DM",
+      tauxTvaDefaut: "0.16",
+    });
+    console.log("Informations de l'entreprise insérées.");
+  } else {
+    console.log("Informations de l'entreprise déjà présentes — aucune insertion.");
+  }
 
   const existingAdmins = await db.select().from(utilisateurs);
   if (existingAdmins.length === 0) {

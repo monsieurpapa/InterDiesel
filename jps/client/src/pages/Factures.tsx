@@ -1,9 +1,22 @@
-import { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Plus, X, Search, Printer } from "lucide-react";
 import { apiCreate, apiDelete, apiList } from "../api";
 import { Badge } from "../components/Badge";
 import { useAuth } from "../auth/AuthContext";
 import { canWrite } from "../config/permissions";
+
+const TYPE_OPTIONS = [
+  { value: "FACTURE", label: "Facture" },
+  { value: "PROFORMA", label: "Proforma" },
+];
+const STATUT_OPTIONS = [
+  { value: "BROUILLON", label: "Brouillon" },
+  { value: "EMISE", label: "Émise" },
+  { value: "PAYEE", label: "Payée" },
+  { value: "PARTIELLEMENT_PAYEE", label: "Partiellement payée" },
+  { value: "ANNULEE", label: "Annulée" },
+];
 
 interface Client {
   id: string;
@@ -48,6 +61,10 @@ export function Factures() {
   const [services, setServices] = useState<Service[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [statutFilter, setStatutFilter] = useState("");
 
   const [numero, setNumero] = useState("");
   const [type, setType] = useState("FACTURE");
@@ -134,6 +151,20 @@ export function Factures() {
     return clients.find((c) => c.id === id)?.nom ?? id;
   }
 
+  const filteredFactures = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return factures.filter((f) => {
+      if (typeFilter && f.type !== typeFilter) return false;
+      if (statutFilter && f.statut !== statutFilter) return false;
+      if (!term) return true;
+      const haystack = `${f.numero} ${nomClient(f.clientId)} ${f.devise}`.toLowerCase();
+      return haystack.includes(term);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [factures, search, typeFilter, statutFilter, clients]);
+
+  const hasActiveFilters = search.trim() !== "" || typeFilter !== "" || statutFilter !== "";
+
   return (
     <div className="page">
       <div className="page-header">
@@ -150,6 +181,48 @@ export function Factures() {
 
       {error && <div className="error-banner">{error}</div>}
 
+      <div className="table-toolbar">
+        <div className="search-field">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Rechercher (numéro, client, devise)…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button type="button" className="search-clear" onClick={() => setSearch("")}>
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+          <option value="">Type : tous</option>
+          {TYPE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select className="filter-select" value={statutFilter} onChange={(e) => setStatutFilter(e.target.value)}>
+          <option value="">Statut : tous</option>
+          {STATUT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              setSearch("");
+              setTypeFilter("");
+              setStatutFilter("");
+            }}
+          >
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       <div className="table-card">
         <table className="data-table">
           <thead>
@@ -160,11 +233,11 @@ export function Factures() {
               <th>Date</th>
               <th>Devise</th>
               <th>Statut</th>
-              {canEdit && <th></th>}
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {factures.map((f) => (
+            {filteredFactures.map((f) => (
               <tr key={f.id}>
                 <td>{f.numero}</td>
                 <td>{f.type}</td>
@@ -172,18 +245,25 @@ export function Factures() {
                 <td>{new Date(f.dateFacture).toLocaleDateString("fr-FR")}</td>
                 <td>{f.devise}</td>
                 <td><Badge value={f.statut} /></td>
-                {canEdit && (
-                  <td className="actions-cell">
+                <td className="actions-cell">
+                  <Link to={`/factures/${f.id}/imprimer`} target="_blank" rel="noopener noreferrer">
+                    <Printer size={13} /> Imprimer
+                  </Link>
+                  {canEdit && (
                     <button className="btn-danger" onClick={() => handleDelete(f.id)}>
                       Supprimer
                     </button>
-                  </td>
-                )}
+                  )}
+                </td>
               </tr>
             ))}
-            {factures.length === 0 && (
+            {filteredFactures.length === 0 && (
               <tr>
-                <td colSpan={canEdit ? 7 : 6} className="empty-row">Aucune facture pour l'instant.</td>
+                <td colSpan={7} className="empty-row">
+                  {factures.length === 0
+                    ? "Aucune facture pour l'instant."
+                    : "Aucun résultat pour cette recherche."}
+                </td>
               </tr>
             )}
           </tbody>

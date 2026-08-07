@@ -9,6 +9,7 @@ import { Factures } from "./pages/Factures";
 import { Login } from "./pages/Login";
 import { ChangePassword } from "./pages/ChangePassword";
 import { Utilisateurs } from "./pages/Utilisateurs";
+import { FacturePrint } from "./pages/FacturePrint";
 import {
   clientsFields,
   servicesFields,
@@ -33,6 +34,7 @@ export default function App() {
 
           <Route element={<RequireAuth />}>
             <Route path="/changer-mot-de-passe" element={<ChangePassword />} />
+            <Route path="/factures/:id/imprimer" element={<FacturePrint />} />
 
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />

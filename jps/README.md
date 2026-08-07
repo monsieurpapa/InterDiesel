@@ -104,3 +104,4 @@ de l'eau via l'application.
 - Définir un `JWT_SECRET` propre à la production (voir `server/.env.example`)
   et déployer client+serveur derrière HTTPS pour que le cookie de session
   (`secure: true` en production) fonctionne correctement.
+# jpsbunia

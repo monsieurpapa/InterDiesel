@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { apiCreate, apiDelete, apiList, apiUpdate } from "../api";
 import { groupTitleForPath, moduleForPath } from "../config/modules";
 import { Badge } from "./Badge";
@@ -40,11 +40,20 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   const displayColumns = columns ?? fields.map((f) => ({ key: f.key, label: f.label }));
   const eyebrow = groupTitleForPath(location.pathname);
   const { user } = useAuth();
   const canEdit = !!user && canWrite(user.role, moduleForPath(location.pathname));
+
+  // Colonnes filtrables par menu déroulant : uniquement les champs "select"
+  // affichés dans le tableau (statut, type, références...) — le texte libre
+  // se cherche via la barre de recherche.
+  const filterableFields = fields.filter(
+    (f) => f.type === "select" && displayColumns.some((c) => c.key === f.key),
+  );
 
   async function reload() {
     setLoading(true);
@@ -59,6 +68,8 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
 
   useEffect(() => {
     reload();
+    setSearch("");
+    setColumnFilters({});
     const resourcesToFetch = Array.from(
       new Set(fields.filter((f) => f.optionsResource).map((f) => f.optionsResource!)),
     );
@@ -117,6 +128,24 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
     }
   }
 
+  /** Libellé texte d'une cellule — utilisé à la fois pour l'affichage et la recherche. */
+  function cellText(row: Row, key: string): string {
+    const field = fields.find((f) => f.key === key);
+    const value = row[key];
+    if (field?.type === "select" && field.staticOptions) {
+      return field.staticOptions.find((o) => o.value === value)?.label ?? String(value ?? "");
+    }
+    if (field?.type === "select" && field.optionsResource) {
+      const options = optionsByResource[field.optionsResource] ?? [];
+      const match = options.find((o) => o.id === value);
+      return match ? String(match[field.optionsLabelKey ?? "nom"] ?? "") : "";
+    }
+    if (field?.type === "checkbox" || typeof value === "boolean") {
+      return value ? "Oui" : "Non";
+    }
+    return value == null ? "" : String(value);
+  }
+
   function renderCell(row: Row, key: string) {
     const field = fields.find((f) => f.key === key);
     const value = row[key];
@@ -124,15 +153,28 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
       return <Badge value={value} />;
     }
     if (field?.type === "select" && field.optionsResource) {
-      const options = optionsByResource[field.optionsResource] ?? [];
-      const match = options.find((o) => o.id === value);
-      return match ? match[field.optionsLabelKey ?? "nom"] : "—";
+      const text = cellText(row, key);
+      return text || "—";
     }
     if (field?.type === "checkbox" || typeof value === "boolean") {
       return <Badge value={value ? "ACTIF" : "TERMINE"} />;
     }
     return value ?? "—";
   }
+
+  const filteredRows = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      for (const [key, want] of Object.entries(columnFilters)) {
+        if (want && String(row[key] ?? "") !== want) return false;
+      }
+      if (!term) return true;
+      return displayColumns.some((c) => cellText(row, c.key).toLowerCase().includes(term));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, search, columnFilters, optionsByResource]);
+
+  const hasActiveFilters = search.trim() !== "" || Object.values(columnFilters).some(Boolean);
 
   return (
     <div className="page">
@@ -150,6 +192,58 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
 
       {error && <div className="error-banner">{error}</div>}
 
+      <div className="table-toolbar">
+        <div className="search-field">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Rechercher…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button type="button" className="search-clear" onClick={() => setSearch("")}>
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        {filterableFields.map((f) => {
+          const options =
+            f.staticOptions ??
+            (optionsByResource[f.optionsResource ?? ""] ?? []).map((o) => ({
+              value: o.id,
+              label: o[f.optionsLabelKey ?? "nom"],
+            }));
+          return (
+            <select
+              key={f.key}
+              className="filter-select"
+              value={columnFilters[f.key] ?? ""}
+              onChange={(e) => setColumnFilters({ ...columnFilters, [f.key]: e.target.value })}
+            >
+              <option value="">{f.label} : tous</option>
+              {options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          );
+        })}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              setSearch("");
+              setColumnFilters({});
+            }}
+          >
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <p className="stat-helper">Chargement…</p>
       ) : (
@@ -164,7 +258,7 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {filteredRows.map((row) => (
                 <tr key={row.id}>
                   {displayColumns.map((c) => (
                     <td key={c.key}>{renderCell(row, c.key)}</td>
@@ -179,10 +273,12 @@ export function CrudPage({ resource, title, fields, columns }: CrudPageProps) {
                   )}
                 </tr>
               ))}
-              {rows.length === 0 && (
+              {filteredRows.length === 0 && (
                 <tr>
                   <td colSpan={displayColumns.length + (canEdit ? 1 : 0)} className="empty-row">
-                    Aucune donnée pour l'instant.
+                    {rows.length === 0
+                      ? "Aucune donnée pour l'instant."
+                      : "Aucun résultat pour cette recherche."}
                   </td>
                 </tr>
               )}
