@@ -317,6 +317,7 @@ export function Factures() {
             </div>
 
             <h3>Lignes de facture</h3>
+            <div className="lignes-table-scroll">
             <table className="data-table lignes-table">
               <thead>
                 <tr>
@@ -380,6 +381,7 @@ export function Factures() {
                 ))}
               </tbody>
             </table>
+            </div>
             <button type="button" className="btn-ghost" onClick={ajouterLigne}>
               <Plus size={14} /> Ajouter une ligne
             </button>

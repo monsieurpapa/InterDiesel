@@ -85,6 +85,49 @@ table, .stat-value, .badge, td.num {
   color: var(--text-muted);
 }
 
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 0.3rem;
+  margin-left: -0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.hamburger-btn:hover {
+  background: var(--bg);
+}
+
+.sidebar-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-text-dim);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
 .topbar-crumb-current {
   color: var(--text);
   font-weight: 600;
@@ -210,16 +253,52 @@ section h2 {
 }
 
 .nav-group {
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.4rem;
 }
 
 .nav-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font: inherit;
   font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--sidebar-text-dim);
-  padding: 0 0.55rem 0.4rem;
+  padding: 0.5rem 0.55rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.nav-group-title:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-text);
+}
+
+.nav-group-chevron {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.nav-group-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.nav-group-links {
+  overflow: hidden;
+  max-height: 320px;
+  opacity: 1;
+  transition: max-height 0.22s ease, opacity 0.15s ease;
+}
+
+.nav-group-links.collapsed {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.18s ease, opacity 0.1s ease;
 }
 
 .nav-link {
@@ -578,7 +657,7 @@ section h2 {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.75rem;
 }
 
@@ -621,6 +700,14 @@ section h2 {
 .btn-ghost:hover {
   background: #f8f9fc;
   color: var(--text);
+}
+
+.lignes-table-scroll {
+  overflow-x: auto;
+}
+
+.lignes-table {
+  min-width: 560px;
 }
 
 .lignes-table select,
@@ -1060,5 +1147,93 @@ textarea:focus-visible {
     max-width: none;
     padding: 0;
     margin: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive — écrans étroits (tablette / mobile)
+   La barre latérale devient un tiroir superposé plutôt qu'une colonne fixe ;
+   déclenché par le bouton hamburger dans la barre du haut.
+   --------------------------------------------------------------------------- */
+
+html, body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+  .hamburger-btn {
+    display: inline-flex;
+  }
+
+  .sidebar-close-btn {
+    display: inline-flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(300px, 85vw);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 14, 26, 0.5);
+    z-index: 35;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .topbar {
+    padding: 0.7rem 1rem;
+  }
+
+  .page {
+    padding: 1.15rem 1rem 2.5rem;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+  }
+
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .invoice-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .modal {
+    padding: 1.15rem;
+    border-radius: var(--radius-md);
+  }
+
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field {
+    min-width: 0;
+  }
+
+  .filter-select {
+    width: 100%;
   }
 }
