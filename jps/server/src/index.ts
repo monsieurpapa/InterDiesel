@@ -2,6 +2,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import { crudRouter } from "./routes/crud.js";
 import { facturesRouter } from "./routes/factures.js";
 import { dashboardRouter } from "./routes/dashboard.js";
@@ -63,6 +66,18 @@ app.use("/api/factures", ...protect("facturation"), facturesRouter);
 app.use("/api/dashboard", requireAuth, requirePasswordAlreadyChanged, dashboardRouter);
 app.use("/api/entreprise", requireAuth, requirePasswordAlreadyChanged, entrepriseRouter);
 app.use("/api/utilisateurs", requireAuth, requirePasswordAlreadyChanged, requireAdmin, utilisateursRouter);
+
+// Sert le client React compilé (même origine que l'API — évite les soucis de
+// cookie/CORS cross-domaine pour la session). Absent en développement local,
+// où le client tourne séparément sur le serveur Vite avec son propre proxy.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.join(__dirname, "../../client/dist");
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+}
 
 const port = Number(process.env.PORT) || 4000;
 app.listen(port, () => {

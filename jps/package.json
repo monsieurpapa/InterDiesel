@@ -5,6 +5,8 @@
     "dev:server": "pnpm --filter jps-server dev",
     "dev:client": "pnpm --filter jps-client dev",
     "db:push": "pnpm --filter jps-server db:push",
-    "db:seed": "pnpm --filter jps-server db:seed"
+    "db:seed": "pnpm --filter jps-server db:seed",
+    "build": "pnpm --filter jps-client build && pnpm --filter jps-server build",
+    "start": "pnpm --filter jps-server start"
   }
 }

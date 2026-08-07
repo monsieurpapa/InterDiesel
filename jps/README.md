@@ -104,4 +104,27 @@ de l'eau via l'application.
 - Définir un `JWT_SECRET` propre à la production (voir `server/.env.example`)
   et déployer client+serveur derrière HTTPS pour que le cookie de session
   (`secure: true` en production) fonctionne correctement.
-# jpsbunia
+
+## Déploiement (Railway)
+
+Un seul service Railway sert à la fois l'API et le client compilé, depuis la
+même origine — ça évite d'avoir à gérer des cookies cross-domaine pour la
+session (`sameSite: "lax"` suffit).
+
+- Racine du service : `jps/` (le monorepo pnpm). Railway détecte `pnpm-lock.yaml`
+  et utilise les scripts `build`/`start` du `package.json` racine :
+  - `build` : compile le client (`vite build`) puis le serveur (`tsc`)
+  - `start` : lance `node server/dist/index.js`
+- `server/src/index.ts` sert `client/dist/` en statique (avec retombée SPA sur
+  `index.html` pour les routes non-`/api`) uniquement quand ce dossier existe
+  — absent en développement local, où le client tourne séparément sur Vite.
+- Variables d'environnement à définir sur le service : `DATABASE_URL`,
+  `JWT_SECRET`, `NODE_ENV=production`.
+
+```bash
+railway up --detach                    # déployer depuis jps/
+railway variable set DATABASE_URL=...  # + JWT_SECRET, NODE_ENV=production
+railway domain                         # générer une URL publique
+```
+
+URL actuelle : https://jps-production-8473.up.railway.app
