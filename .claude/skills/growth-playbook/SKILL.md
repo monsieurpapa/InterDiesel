@@ -37,7 +37,7 @@ Recruit 20–30 creators in-niche, pay a fixed fee ($15–30/video) plus a perfo
 - **Track B**: this is the tactic that transfers almost unchanged — Goma/Bukavu/Kinshasa TikTok and Instagram creators in the relevant niche (food for `cafekivucongo`, nightlife/hospitality for `aryv logistics`, local services for `kivukazi`/`kazi`). Pay in USD or Mobile Money. Fresh accounts read as more authentic than the brand's own.
 
 ### 5. Video > image/text
-When building in public, a demo video beats a screenshot or text post, on both X/LinkedIn (Track A) and Facebook/WhatsApp/TikTok (Track B). Always prefer a 20–40s screen-recorded use case over a static post.
+When building in public, a demo video beats a screenshot or text post, on both X/LinkedIn (Track A) and Facebook/WhatsApp/TikTok (Track B). Always prefer a 20–40s screen-recorded use case over a static post. For a full launch-video plan on X specifically (hook-writing, viral-format research, launch-day network mobilization) — Track A only — see the separate `launch-video` skill.
 
 ### 6. Go where customers already are
 Identify the specific communities customers spend time in and pay for a shoutout/placement there rather than broadcasting broadly.

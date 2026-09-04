@@ -45,3 +45,5 @@ This is a multi-project workspace for software products targeting the DRC/Great 
 - Single-client/internal tools (`comptable`, `heritage-app`, `Patrimoine`, `fikiri_id`) are out of scope — there's no open market to acquire from.
 
 Invoke it whenever a project asks about getting customers/users, launch strategy, or growth — it picks the right track rather than applying US-tech-market tactics to a hyperlocal product or vice versa.
+
+`.claude/skills/launch-video/SKILL.md` is a companion skill scoped to Track A only: producing a launch video and driving a coordinated launch-day push on X (hook-writing, viral-format research, network mobilization). It deliberately does not reuse the source thread's "scripted quote-tweets + mass engagement in hour 1" mechanic — that reads as coordinated platform manipulation under X's own rules — and reframes it as genuine network mobilization instead. Invoke it for launch-video-specific requests; invoke `growth-playbook` for everything else GTM-related.
