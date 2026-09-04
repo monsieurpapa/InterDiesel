@@ -17,6 +17,7 @@ No test suite exists. Manual testing via curl or the browser UI.
 
 Quick API smoke test (default password is `admin` if `.env` is absent):
 ```bash
+curl -s http://localhost:3000/api/health
 curl -s http://localhost:3000/api/auth -X POST -H "Content-Type: application/json" -d '{"password":"admin"}'
 curl -s http://localhost:3000/api/packages -H "Authorization: Bearer admin"
 curl -s http://localhost:3000/api/vouchers/batch -X POST -H "Authorization: Bearer admin" -H "Content-Type: application/json" -d '{"packageId":1,"quantity":5}'
@@ -90,3 +91,23 @@ Settings stored in the `settings` table override env vars for MikroTik connectio
 `unused` → `active` (on first portal login) → `expired` (automatic via scheduler or explicit check) or `cancelled` (admin-only, only from `unused`).
 
 Vouchers in `active` status with `expires_at` in the past are bulk-updated to `expired` by the scheduler every minute and also lazily on read in `activateVoucher()` and `/portal/status`.
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+
+Key routing rules:
+- Product ideas/brainstorming → invoke /office-hours
+- Strategy/scope → invoke /plan-ceo-review
+- Growth/customer acquisition, GTM, launch strategy, marketing → invoke /growth-playbook
+- Architecture → invoke /plan-eng-review
+- Design system/plan review → invoke /design-consultation or /plan-design-review
+- Full review pipeline → invoke /autoplan
+- Bugs/errors → invoke /investigate
+- QA/testing site behavior → invoke /qa or /qa-only
+- Code review/diff check → invoke /review
+- Visual polish → invoke /design-review
+- Ship/deploy/PR → invoke /ship or /land-and-deploy
+- Save progress → invoke /context-save
+- Resume context → invoke /context-restore
+- Author a backlog-ready spec/issue → invoke /spec
