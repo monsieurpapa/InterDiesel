@@ -3,6 +3,7 @@ import { ulid } from 'ulid';
 import { db, engine, go, t, toast, useLive, useSession } from '../state';
 import { Empty, Field, Icon, Page, Section } from '../ui';
 import { ProductPick } from './stock';
+import { ReverseControl, useReversedIds } from './admin';
 import { fmtUSD, round2 } from '../../shared/money';
 import { fmtDate, fmtDateTime } from '../../shared/time';
 import type { Purchase, Supplier } from '../../shared/types';
@@ -20,6 +21,7 @@ export function PurchasesPage() {
     [] as Purchase[],
   );
   const sup = new Map(suppliers.map((x) => [x.id, x.name]));
+  const reversed = useReversedIds();
   return (
     <Page
       title={t('purchases.title')}
@@ -30,7 +32,7 @@ export function PurchasesPage() {
         {list.map((p) => (
           <a class="item" href={`#/purchase/${p.id}`}>
             <div class="main">
-              <div class="title">{p.supplierId ? sup.get(p.supplierId) : t('purchases.noSupplier')}</div>
+              <div class="title">{p.supplierId ? sup.get(p.supplierId) : t('purchases.noSupplier')} {reversed.has(p.id) && <span class="tag bad">{t('reverse.tag')}</span>}</div>
               <div class="sub">{fmtDate(p.at)} · {p.invoiceNo ?? ''} · {t('purchases.lines', { n: p.lines.length })}</div>
             </div>
             <div class="end usd">{fmtUSD(p.totalUSD)}</div>
@@ -164,6 +166,7 @@ export function PurchasePage(props: { id: string }) {
         </tbody>
       </table>
       {p.note && <p>{p.note}</p>}
+      <ReverseControl kind="purchase" id={p.id} block />
     </Page>
   );
 }

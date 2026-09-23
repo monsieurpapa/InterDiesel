@@ -4,12 +4,14 @@ import { useMemo, useState } from 'preact/hooks';
 import { db, engine, go, t, toast, useLive, useSession, useStock } from '../state';
 import { Empty, Field, Icon, Page, matchProduct, useDebounced } from '../ui';
 import { CATEGORIES } from './products';
+import { ReverseControl, useReversedIds } from './admin';
 import { fmtUSD, round2 } from '../../shared/money';
 import { fmtDateTime } from '../../shared/time';
 import type { Count } from '../../shared/types';
 
 export function CountsPage() {
   const s = useSession();
+  const reversed = useReversedIds();
   const list = useLive(() => db.count.where('storeId').equals(s.storeId).toArray().then((x: Count[]) => x.sort((a, b) => b.at - a.at)), [s.storeId], [] as Count[]);
   return (
     <Page title={t('counts.title')} back="/menu" actions={s.can('count') && <a class="btn small dark" href="#/count/new"><Icon.plus />{t('counts.start')}</a>}>
@@ -23,7 +25,7 @@ export function CountsPage() {
                 <div class="title">{fmtDateTime(c.at)}</div>
                 <div class="sub">{t('counts.summary', { n: c.lines.length, gaps })} · {s.users.find((u) => u.id === c.userId)?.name}</div>
               </div>
-              {gaps ? <span class="tag bad">{t('counts.gaps', { n: gaps })}</span> : <span class="tag ok">{t('counts.ok')}</span>}
+              {reversed.has(c.id) ? <span class="tag">{t('reverse.tag')}</span> : gaps ? <span class="tag bad">{t('counts.gaps', { n: gaps })}</span> : <span class="tag ok">{t('counts.ok')}</span>}
             </a>
           );
         })}
@@ -167,6 +169,7 @@ export function CountPage(props: { id: string }) {
         </tbody>
       </table>
       {c.note && <p>{c.note}</p>}
+      <ReverseControl kind="count" id={c.id} block />
     </Page>
   );
 }

@@ -5,6 +5,7 @@ import { lowStockText } from '../../shared/messages';
 import { fmtUSD, round2 } from '../../shared/money';
 import type { AdjustReason, Adjustment, MinStock, Product } from '../../shared/types';
 import { sendWhatsApp } from '../share';
+import { useReversedIds } from './admin';
 
 export function StockPage() {
   const s = useSession();
@@ -110,6 +111,7 @@ export function AdjustPage(props: { productId: string }) {
     [] as Adjustment[],
   );
   const p = s.productById.get(productId);
+  const reversed = useReversedIds();
   if (!s.can('adjust')) return <Page title={t('adjust.title')} back><Empty>{t('error.forbidden')}</Empty></Page>;
 
   const submit = async (e: Event) => {
@@ -159,7 +161,10 @@ export function AdjustPage(props: { productId: string }) {
               <div class="title">{s.productById.get(a.productId)?.name}</div>
               <div class="sub">{t(`reason.${a.reason}`)} · {a.note}</div>
             </div>
-            <div class={`end qty ${a.qty < 0 ? 'neg' : 'pos'}`}>{a.qty > 0 ? `+${a.qty}` : a.qty}</div>
+            <div class="end">
+              <div class={`qty ${a.qty < 0 ? 'neg' : 'pos'}`}>{a.qty > 0 ? `+${a.qty}` : a.qty}</div>
+              {reversed.has(a.id) ? <span class="tag">{t('reverse.tag')}</span> : s.can('doc.reverse') && <a class="btn small danger" href={`#/reverse/adjustment/${a.id}`}>{t('reverse.short')}</a>}
+            </div>
           </div>
         ))}
         {!recent.length && <Empty>{t('adjust.none')}</Empty>}

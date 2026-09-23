@@ -32,6 +32,7 @@ export const DOC_KINDS = [
   'transfer_receive',
   'cash_close',
   'rate',
+  'reversal',
 ] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
 
@@ -268,6 +269,23 @@ export interface RateDoc extends DocBase {
   cdfPerUsd: number;
 }
 
+/** Kinds of documents the owner can cancel with a reversal (sales use sale_void). */
+export const REVERSIBLE_KINDS = ['purchase', 'adjustment', 'count', 'transfer_send', 'transfer_receive', 'transfer_request', 'repayment', 'cash_close'] as const;
+export type ReversibleKind = (typeof REVERSIBLE_KINDS)[number];
+
+/**
+ * Cancels an earlier document by adding its exact opposite (documents are never
+ * edited or deleted, so history stays complete). The server rebuilds the opposite
+ * movements and debts from its own copy of the original.
+ */
+export interface Reversal extends DocBase {
+  refKind: ReversibleKind;
+  refId: string;
+  reason: string;
+  movements: { storeId: string; productId: string; qty: number }[];
+  ledger: { customerId: string; amountUSD: number }[];
+}
+
 // ---------- Derived ----------
 
 export type MovementKind =
@@ -277,7 +295,8 @@ export type MovementKind =
   | 'adjustment'
   | 'count'
   | 'transfer_out'
-  | 'transfer_in';
+  | 'transfer_in'
+  | 'reversal';
 
 export interface Movement {
   id: string;
@@ -297,7 +316,7 @@ export interface StockLevel {
   qty: number;
 }
 
-export type LedgerKind = 'credit_sale' | 'repayment' | 'void';
+export type LedgerKind = 'credit_sale' | 'repayment' | 'void' | 'reversal';
 
 export interface LedgerEntry {
   id: string;

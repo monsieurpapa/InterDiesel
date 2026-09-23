@@ -166,6 +166,7 @@ export function VoidPage(props: { id: string }) {
   const sale = useLive(() => db.sale.get(props.id) as Promise<Sale | undefined>, [props.id], undefined);
   const [reason, setReason] = useState('');
   const [refund, setRefund] = useState(true);
+  const [redo, setRedo] = useState(false);
   const [busy, setBusy] = useState(false);
   if (!sale) return <Page title={t('void.title')} back><Empty>{t('common.notFound')}</Empty></Page>;
   const credit = creditOf(sale);
@@ -187,7 +188,16 @@ export function VoidPage(props: { id: string }) {
         refundUSD: refund ? paidNow : 0,
       });
       toast(t('void.done'));
-      go(`/sale/${sale.id}`);
+      if (redo) {
+        // Correction: the same items go back in the cart so the sale can be made again, right.
+        try {
+          localStorage.setItem(
+            'cart',
+            JSON.stringify({ lines: sale.lines.map((l) => ({ productId: l.productId, qty: l.qty, unitUSD: l.unitUSD })), customerId: sale.customerId ?? null, discountUSD: sale.discountUSD, note: sale.note ?? '' }),
+          );
+        } catch {}
+        go('/');
+      } else go(`/sale/${sale.id}`);
     } catch (err) {
       toast(t('error.generic'), 'error');
     } finally {
@@ -209,6 +219,10 @@ export function VoidPage(props: { id: string }) {
           </label>
         )}
         {credit > 0 && <p>{t('void.creditCancelled', { amount: fmtUSD(credit) })}</p>}
+        <label class="check">
+          <input type="checkbox" checked={redo} onChange={(e) => setRedo(e.currentTarget.checked)} />
+          {t('void.redo')}
+        </label>
         <button class="btn danger solid block" disabled={busy || reason.trim().length < 3}>{t('void.confirm')}</button>
       </form>
     </Page>

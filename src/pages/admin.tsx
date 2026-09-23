@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'preact/hooks';
 import { ulid } from 'ulid';
-import { db, engine, go, t, toast, useLive, useSession, errText } from '../state';
+import { back, db, engine, go, t, toast, useLive, useSession, errText } from '../state';
+import { inverseOf, receiveIdFor, reversalIdFor } from '../../shared/derive';
+import { fmtUSD } from '../../shared/money';
 import { Empty, Field, Icon, Page, Section } from '../ui';
 import { hashPin, validPin } from '../../shared/pin';
 import { fmtDateTime } from '../../shared/time';
 import { fmtCDF, usdToCdf } from '../../shared/money';
-import type { Alert, AuditEntry, RateDoc, Role, Store, User } from '../../shared/types';
+import type { Alert, AuditEntry, RateDoc, Reversal, ReversibleKind, Role, Store, User } from '../../shared/types';
+import { REVERSIBLE_KINDS } from '../../shared/types';
 import type { OutboxItem } from '../core/db';
 import type { SyncStatus } from '../core/engine';
 
@@ -500,6 +503,107 @@ export function StoreEditPage(props: { id: string }) {
         <Field label={t('stores.phone')} hint={t('stores.phoneHint')}><input value={v.phone} onInput={(e) => set({ phone: e.currentTarget.value })} inputMode="tel" /></Field>
         {existing && <label class="check"><input type="checkbox" checked={v.active} onChange={(e) => set({ active: e.currentTarget.checked })} />{t('common.active')}</label>}
         <button class="btn primary block" disabled={!s.can('store.manage')}>{t('common.save')}</button>
+      </form>
+    </Page>
+  );
+}
+
+// ---------------- reversals (owner cancels any operation) ----------------
+
+/** Ids of cancelled documents, for lists that must hide or mark them. */
+export function useReversedIds(): Set<string> {
+  const rows = useLive(() => db.reversal.toArray(), [], [] as any[]);
+  return new Set(rows.map((r: any) => r.refId as string));
+}
+
+/** "Cancelled" tag, or an "Annuler" button for the owner. */
+export function ReverseControl(props: { kind: ReversibleKind; id: string; block?: boolean }) {
+  const s = useSession();
+  const rev = useLive(() => db.reversal.get(reversalIdFor(props.id)), [props.id], undefined as any);
+  if (rev) return <div class="notice bad" style={{ marginTop: 10 }}>{t('reverse.done', { reason: rev.reason, at: fmtDateTime(rev.at) })}</div>;
+  if (!s.can('doc.reverse')) return null;
+  return (
+    <a class={`btn danger ${props.block ? 'block' : 'small'}`} style={props.block ? { marginTop: 14 } : undefined} href={`#/reverse/${props.kind}/${props.id}`}>
+      {t('reverse.action')}
+    </a>
+  );
+}
+
+export function ReversePage(props: { kind: string; id: string }) {
+  const s = useSession();
+  const kind = props.kind as ReversibleKind;
+  const doc = useLive(() => (REVERSIBLE_KINDS.includes(kind) ? db.table(kind).get(props.id) : Promise.resolve(undefined)), [kind, props.id], undefined as any);
+  const received = useLive(
+    () => (kind === 'transfer_send' ? db.transfer_receive.get(receiveIdFor(props.id)) : Promise.resolve(undefined)),
+    [kind, props.id],
+    undefined as any,
+  );
+  const recvReversed = useLive(() => (received ? db.reversal.get(reversalIdFor(received.id)) : Promise.resolve(undefined)), [received?.id], undefined as any);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  if (!s.can('doc.reverse')) return <Page title={t('reverse.title')} back><Empty>{t('error.forbidden')}</Empty></Page>;
+  if (!doc) return <Page title={t('reverse.title')} back><Empty>{t('common.notFound')}</Empty></Page>;
+  const inv = inverseOf(kind, doc);
+  // A received transfer is cancelled as a whole: first the reception, then the sending.
+  const alsoReception = kind === 'transfer_send' && received && !recvReversed ? received : null;
+  const recvInv = alsoReception ? inverseOf('transfer_receive', alsoReception) : null;
+  if (recvInv) inv.movements.unshift(...recvInv.movements);
+  const blocked = false;
+
+  const submit = async (e: Event) => {
+    e.preventDefault();
+    if (reason.trim().length < 2 || blocked) return;
+    setBusy(true);
+    try {
+      if (alsoReception && recvInv) {
+        await engine.createDoc<Reversal>('reversal', s.user.id, alsoReception.storeId, {
+          id: reversalIdFor(alsoReception.id),
+          refKind: 'transfer_receive',
+          refId: alsoReception.id,
+          reason: reason.trim(),
+          ...recvInv,
+        });
+      }
+      const own = inverseOf(kind, doc);
+      await engine.createDoc<Reversal>('reversal', s.user.id, doc.storeId, { id: reversalIdFor(doc.id), refKind: kind, refId: doc.id, reason: reason.trim(), ...own });
+      toast(t('reverse.saved'));
+      back();
+    } catch {
+      toast(t('error.generic'), 'error');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Page title={t('reverse.title')} back>
+      <p>
+        <b>{t(`kind.${kind}`)}</b> · {fmtDateTime(doc.at)} · {s.users.find((u) => u.id === doc.userId)?.name} · {s.stores.find((x) => x.id === doc.storeId)?.name}
+      </p>
+      <div class="notice warn">{t('reverse.explain')}</div>
+      {inv.movements.length > 0 && (
+        <>
+          <Section title={t('reverse.stockEffect')} />
+          <table class="facts">
+            <tbody>
+              {inv.movements.map((m) => (
+                <tr>
+                  <td>{s.productById.get(m.productId)?.name ?? m.productId}<div class="muted">{s.stores.find((x) => x.id === m.storeId)?.name}</div></td>
+                  <td class={`n ${m.qty < 0 ? 'neg' : 'pos'}`}><b>{m.qty > 0 ? '+' : ''}{m.qty}</b></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+      {inv.ledger.map((l) => (
+        <p>{t('reverse.debtEffect', { name: s.customers.find((c) => c.id === l.customerId)?.name ?? '', amount: fmtUSD(l.amountUSD) })}</p>
+      ))}
+      {alsoReception && <div class="notice" style={{ marginTop: 10 }}>{t('reverse.withReception')}</div>}
+      <form class="stack" style={{ marginTop: 12 }} onSubmit={submit}>
+        <Field label={t('void.reason')}>
+          <input value={reason} onInput={(e) => setReason(e.currentTarget.value)} required minLength={2} placeholder={t('reverse.reasonPh')} />
+        </Field>
+        <button class="btn danger solid block" disabled={busy || reason.trim().length < 2 || !!blocked}>{t('reverse.confirm')}</button>
       </form>
     </Page>
   );

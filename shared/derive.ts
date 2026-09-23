@@ -12,6 +12,7 @@ import type {
   Movement,
   Purchase,
   Repayment,
+  Reversal,
   Sale,
   SaleVoid,
   TransferReceive,
@@ -84,11 +85,31 @@ export function derive(kind: DocKind, d: any): Derived {
       t.lines.forEach((l, i) => mv(i, t.storeId, l.productId, l.qty, 'transfer_in'));
       break;
     }
+    case 'reversal': {
+      const r = d as Reversal;
+      r.movements.forEach((m, i) => mv(i, m.storeId, m.productId, m.qty, 'reversal'));
+      r.ledger.forEach((l, i) =>
+        ledger.push({ id: `${r.id}:l${i}`, customerId: l.customerId, storeId: r.storeId, amountUSD: l.amountUSD, kind: 'reversal', ref: r.id, at: r.at }),
+      );
+      break;
+    }
     default:
       break;
   }
   return { movements, ledger };
 }
+
+/** The opposite effects of a document, used to fill a reversal. */
+export function inverseOf(kind: DocKind, d: any): Pick<Reversal, 'movements' | 'ledger'> {
+  const { movements, ledger } = derive(kind, d);
+  return {
+    movements: movements.map((m) => ({ storeId: m.storeId, productId: m.productId, qty: -m.qty })),
+    ledger: ledger.map((l) => ({ customerId: l.customerId, amountUSD: -l.amountUSD })),
+  };
+}
+
+/** Deterministic id: a document can be reversed only once. */
+export const reversalIdFor = (refId: string) => `rev_${refId}`;
 
 /** The store a document belongs to (for permissions and who may see it). */
 export function docStore(kind: DocKind, d: any): string {
@@ -101,6 +122,7 @@ export function docStore(kind: DocKind, d: any): string {
  */
 export function docScope(kind: DocKind, d: any): string | null {
   if (kind === 'transfer_request' || kind === 'transfer_send' || kind === 'transfer_receive' || kind === 'rate') return null;
+  if (kind === 'reversal' && String(d.refKind).startsWith('transfer_')) return null;
   return d.storeId;
 }
 

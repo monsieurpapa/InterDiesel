@@ -30,7 +30,8 @@ export function buildMessages(db: DB, now: number, which: 'evening' | 'monday'):
     const recent = (k: string) => listKind(db, k).filter((d: any) => d.at >= since);
     const sales = recent('sale');
     const voids = recent('sale_void');
-    const reps = recent('repayment');
+    const cancelled = new Set(listKind(db, 'reversal').map((r: any) => r.refId));
+    const reps = recent('repayment').filter((r: any) => !cancelled.has(r.id));
     const products = new Map((listKind(db, 'product') as Product[]).map((p) => [p.id, p]));
     const stock = new Map(listKind(db, 'stock').map((s: any) => [s.id, s.qty as number]));
     const mins = listKind(db, 'minstock') as MinStock[];

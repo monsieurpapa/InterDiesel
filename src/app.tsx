@@ -17,7 +17,7 @@ import { TransfersPage, TransferNewPage, TransferPage, RequestNewPage } from './
 import { PurchasesPage, PurchaseNewPage, PurchasePage, SuppliersPage, SupplierEditPage } from './pages/purchases';
 import { CountsPage, CountNewPage, CountPage } from './pages/counts';
 import { CashPage } from './pages/cash';
-import { AlertsPage, AuditPage, RatePage, SyncPage, DevicePage, UsersPage, UserEditPage, StoresPage, StoreEditPage } from './pages/admin';
+import { AlertsPage, AuditPage, RatePage, SyncPage, DevicePage, UsersPage, UserEditPage, StoresPage, StoreEditPage, ReversePage } from './pages/admin';
 
 const IDLE_LOCK_MS = 20 * 60_000;
 
@@ -491,6 +491,8 @@ function Router() {
       return <UserEditPage id={b === 'new' ? undefined : b} />;
     case 'stores':
       return <StoresPage />;
+    case 'reverse':
+      return <ReversePage kind={b} id={c} />;
     case 'store':
       return <StoreEditPage id={b} />;
     default:

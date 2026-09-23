@@ -20,14 +20,15 @@ export function ProductsPage() {
   const dq = useDebounced(q);
   const [cat, setCat] = useState('');
   const [scan, setScan] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const cats = [...new Set([...CATEGORIES, ...s.products.map((p) => p.category)])].filter((c) => s.products.some((p) => p.category === c));
   const list = useMemo(
     () =>
       s.products
-        .filter((p) => p.active && (!cat || p.category === cat) && matchProduct(p, dq))
+        .filter((p) => (showInactive ? !p.active : p.active) && (!cat || p.category === cat) && matchProduct(p, dq))
         .sort((a, b) => a.name.localeCompare(b.name))
         .slice(0, 200),
-    [s.products, dq, cat],
+    [s.products, dq, cat, showInactive],
   );
   const others = (pid: string) => s.stores.filter((st) => st.id !== s.storeId).reduce((a, st) => a + Math.max(0, all.get(`${st.id}:${pid}`) ?? 0), 0);
 
@@ -69,6 +70,12 @@ export function ProductsPage() {
       </div>
       <div class="row" style={{ margin: '4px 0 8px' }}>
         <a class="btn small" href="#/stock">{t('products.toStock')}</a>
+        {s.can('product.edit') && (
+          <label class="check" style={{ minHeight: 44 }}>
+            <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.currentTarget.checked)} />
+            {t('products.showInactive')}
+          </label>
+        )}
       </div>
       <div class="list">
         {list.map((p) => {

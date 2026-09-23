@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { db, engine, go, t, toast, useLive, useSession, useStock } from '../state';
 import { Empty, Field, Icon, Page, Section, Seg } from '../ui';
 import { ProductPick } from './stock';
+import { ReverseControl } from './admin';
 import { receiveIdFor } from '../../shared/derive';
 import { transferRequestText, transferSendText } from '../../shared/messages';
 import { fmtDateTime } from '../../shared/time';
@@ -11,9 +12,11 @@ import { sendWhatsApp } from '../share';
 function useTransfers(storeId: string) {
   return useLive(
     async () => {
-      const sends = (await db.transfer_send.toArray()) as TransferSend[];
-      const recvs = (await db.transfer_receive.toArray()) as TransferReceive[];
-      const reqs = (await db.transfer_request.toArray()) as TransferRequest[];
+      // cancelled (reversed) transfers, receptions and requests are left out
+      const rev = new Set((await db.reversal.toArray()).map((r: any) => r.refId as string));
+      const sends = ((await db.transfer_send.toArray()) as TransferSend[]).filter((x) => !rev.has(x.id));
+      const recvs = ((await db.transfer_receive.toArray()) as TransferReceive[]).filter((x) => !rev.has(x.id));
+      const reqs = ((await db.transfer_request.toArray()) as TransferRequest[]).filter((x) => !rev.has(x.id));
       const recvBy = new Map(recvs.map((r) => [r.sendId, r]));
       const sentFor = new Set(sends.map((x) => x.requestId).filter(Boolean));
       return {
@@ -279,6 +282,7 @@ export function TransferPage(props: { id: string }) {
             <Icon.whatsapp />
             {t('transfers.resend')}
           </button>
+          <ReverseControl kind="transfer_request" id={req.id} block />
         </div>
       </Page>
     );
@@ -286,7 +290,8 @@ export function TransferPage(props: { id: string }) {
   if (!send) return <Page title={t('transfers.title')} back="/transfers"><Empty>{t('common.notFound')}</Empty></Page>;
   const from = s.stores.find((x) => x.id === send.storeId)!;
   const to = s.stores.find((x) => x.id === send.toStoreId)!;
-  const canReceive = !recv && send.toStoreId === s.storeId && s.can('transfer.receive');
+  const cancelled = useLiveCancelled(send.id);
+  const canReceive = !recv && !cancelled && send.toStoreId === s.storeId && s.can('transfer.receive');
   const qtyGot = (pid: string, sent: number) => {
     const v = got[pid];
     return v === undefined ? sent : Math.max(0, parseInt(v) || 0);
@@ -308,7 +313,9 @@ export function TransferPage(props: { id: string }) {
     <Page title={t('transfers.transferTitle')} back="/transfers">
       <p><b>{from?.name}</b> → <b>{to?.name}</b></p>
       <p class="muted">{t('transfers.sentAt', { at: fmtDateTime(send.at), name: s.users.find((u) => u.id === send.userId)?.name ?? '' })}</p>
-      {recv ? (
+      {cancelled ? (
+        <div class="notice bad">{t('transfers.cancelled')}</div>
+      ) : recv ? (
         <div class="notice ok">{t('transfers.receivedAt', { at: fmtDateTime(recv.at), name: s.users.find((u) => u.id === recv.userId)?.name ?? '' })}</div>
       ) : (
         <div class="notice warn">{t('transfers.inTransitLong')}</div>
@@ -353,6 +360,11 @@ export function TransferPage(props: { id: string }) {
         <Icon.whatsapp />
         {t('transfers.shareSend')}
       </button>
+      <ReverseControl kind="transfer_send" id={send.id} block />
     </Page>
   );
+}
+
+function useLiveCancelled(id: string) {
+  return useLive(() => db.reversal.get(`rev_${id}`).then((r: any) => !!r), [id], false);
 }

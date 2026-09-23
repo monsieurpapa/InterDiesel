@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { openDb, newEpoch } from './db';
 import { ensureDir } from './app';
-import { bootstrap, seedDemo } from './seed';
+import { bootstrap, createStaff, seedDemo, STAFF } from './seed';
 import { setCredentials } from './auth';
 import { validPin } from '../shared/pin';
 
@@ -51,6 +51,16 @@ async function main() {
       const rate = Number(await ask('Taux du jour, FC pour 1 USD (ex: 2300): '));
       await bootstrap(db, { ownerName, ownerUsername, ownerPassword, ownerPin, rate: rate > 0 ? rate : 2300 });
       console.log('Prêt. Les 3 magasins ont été créés; renommez-les depuis l’application (Menu > Magasins).');
+      break;
+    }
+    case 'staff': {
+      const db = openDb(dbFile);
+      const before = (db.prepare("SELECT COUNT(*) n FROM records WHERE kind='user'").get() as any).n;
+      await createStaff(db);
+      const after = (db.prepare("SELECT COUNT(*) n FROM records WHERE kind='user'").get() as any).n;
+      console.log(`${after - before} utilisateur(s) créé(s). PIN par défaut :`);
+      for (const [, name, role, pin] of STAFF) console.log(`  ${name} (${role === 'manager' ? 'gérant' : 'vendeur'}) : ${pin}`);
+      console.log('Changez ces PIN dans Menu > Utilisateurs, et donnez un identifiant à chaque gérant.');
       break;
     }
     case 'backup': {
@@ -118,7 +128,7 @@ async function main() {
       break;
     }
     default:
-      console.log('Commandes: init | demo | backup | restore <fichier> | password <utilisateur>');
+      console.log('Commandes: init | demo | staff | backup | restore <fichier> | password <utilisateur>');
   }
 }
 

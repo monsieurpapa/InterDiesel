@@ -8,6 +8,7 @@ import { fmt, fmtCDF, fmtUSD, round2 } from '../../shared/money';
 import { dayKey, dayStart, DAY_MS, fmtDate, fmtDateTime } from '../../shared/time';
 import type { CashClose, Currency, Repayment, Sale, SaleVoid } from '../../shared/types';
 import { sendWhatsApp } from '../share';
+import { useReversedIds } from './admin';
 
 const KEYS = ['cash:USD', 'cash:CDF', 'mpesa:USD', 'mpesa:CDF', 'airtel:USD', 'airtel:CDF', 'orange:USD', 'orange:CDF'];
 
@@ -18,10 +19,12 @@ export function CashPage() {
   const sales = useLive(() => db.sale.where('[storeId+at]').between([s.storeId, from], [s.storeId, from + DAY_MS]).toArray() as Promise<Sale[]>, [s.storeId, day], [] as Sale[]);
   const voids = useLive(() => db.sale_void.where('storeId').equals(s.storeId).toArray() as Promise<SaleVoid[]>, [s.storeId], [] as SaleVoid[]);
   const reps = useLive(() => db.repayment.where('storeId').equals(s.storeId).filter((r: Repayment) => r.at >= from && r.at < from + DAY_MS).toArray(), [s.storeId, day], [] as Repayment[]);
-  const closes = useLive(() => db.cash_close.where('storeId').equals(s.storeId).toArray().then((x: CashClose[]) => x.sort((a, b) => b.at - a.at)), [s.storeId], [] as CashClose[]);
+  const reversed = useReversedIds();
+  const allCloses = useLive(() => db.cash_close.where('storeId').equals(s.storeId).toArray().then((x: CashClose[]) => x.sort((a, b) => b.at - a.at)), [s.storeId], [] as CashClose[]);
+  const closes = allCloses.filter((c) => !reversed.has(c.id));
   const [counted, setCounted] = useState<Record<string, string>>({});
   const [note, setNote] = useState('');
-  const expected = expectedDrawer(day, s.storeId, sales, voids, reps);
+  const expected = expectedDrawer(day, s.storeId, sales, voids, reps.filter((r) => !reversed.has(r.id)));
   const keys = KEYS.filter((k) => k.startsWith('cash:') || (expected[k] ?? 0) !== 0);
   const done = closes.find((c) => c.day === day);
   if (!s.can('cash.close')) return <Page title={t('cash.title')} back><Empty>{t('error.forbidden')}</Empty></Page>;
@@ -90,6 +93,7 @@ export function CashPage() {
           const g = closeGaps(c);
           const bad = Object.values(g).some((v) => Math.abs(v) > 0.009);
           return (
+            <>
             <button class="item" onClick={() => share(c)}>
               <div class="main">
                 <div class="title">{fmtDate(dayStart(c.day) + 3_600_000)}</div>
@@ -98,6 +102,10 @@ export function CashPage() {
               {bad ? <span class="tag bad">{t('cash.withGap')}</span> : <span class="tag ok">{t('cash.balanced')}</span>}
               <Icon.whatsapp width={22} height={22} />
             </button>
+            {s.can('doc.reverse') && (
+              <a class="btn small danger" style={{ margin: '4px 0 8px' }} href={`#/reverse/cash_close/${c.id}`}>{t('reverse.action')}</a>
+            )}
+            </>
           );
         })}
         {!closes.length && <Empty>{t('cash.none')}</Empty>}

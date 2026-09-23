@@ -38,6 +38,7 @@ export class LocalDB extends Dexie {
   transfer_receive!: Table<any, string>;
   cash_close!: Table<any, string>;
   rate!: Table<any, string>;
+  reversal!: Table<any, string>;
   movement!: Table<any, string>;
   stock!: Table<any, string>;
   ledger!: Table<any, string>;
@@ -74,6 +75,8 @@ export class LocalDB extends Dexie {
       outbox: '++seq, opId, status',
       meta: 'key',
     });
+    // v2: owner can cancel documents (reversals)
+    this.version(2).stores({ reversal: 'id, at, storeId, refId, refKind' });
   }
 }
 

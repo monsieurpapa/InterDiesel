@@ -89,6 +89,42 @@ export async function bootstrap(db: DB, input: BootstrapInput) {
   return { ownerId, stores };
 }
 
+/** Default team: one manager and two sellers per store (same as the demo). */
+export const STAFF = [
+  ['st_ibanda', 'Espoir Bisimwa', 'manager', '2222', 'ibanda'],
+  ['st_ibanda', 'Grâce Mapendo', 'seller', '1234', null],
+  ['st_ibanda', 'Daniel Byamungu', 'seller', '5678', null],
+  ['st_kadutu', 'Aline Cirimwami', 'manager', '3333', 'kadutu'],
+  ['st_kadutu', 'Olivier Mugisho', 'seller', '1234', null],
+  ['st_kadutu', 'Sifa Nsimire', 'seller', '5678', null],
+  ['st_bagira', 'Patrick Mushagalusa', 'manager', '4444', 'bagira'],
+  ['st_bagira', 'Rachel Zawadi', 'seller', '1234', null],
+  ['st_bagira', 'Héritier Kabamba', 'seller', '5678', null],
+] as const;
+
+/**
+ * Creates the default team. With `withLogins`, managers also get the demo
+ * usernames/passwords (demo only: in production the owner sets manager logins).
+ * Skips people who already exist, so it can be run twice safely.
+ */
+export async function createStaff(db: DB, ownerId = 'u_owner', withLogins = false) {
+  const users: { id: string; storeId: string; role: Role }[] = [];
+  const ops: Op[] = [];
+  for (const [i, [storeId, name, role, pin]] of STAFF.entries()) {
+    const id = `u_${storeId.slice(3)}_${i}`;
+    users.push({ id, storeId, role: role as Role });
+    if (!getRecord(db, 'store', storeId) || getRecord(db, 'user', id)) continue;
+    ops.push(patch('user', id, ownerId, { name, role, storeId, pinHash: await hashPin(pin, id), phone: '', active: true }));
+  }
+  if (ops.length) must(db, ops);
+  if (withLogins) {
+    for (const [i, [storeId, , , , username]] of STAFF.entries()) {
+      if (username) setCredentials(db, `u_${storeId.slice(3)}_${i}`, username, `${username}2026`);
+    }
+  }
+  return users;
+}
+
 // Deterministic pseudo-random numbers so the demo is the same on every install.
 function rng(seed: number) {
   let s = seed >>> 0;
@@ -110,30 +146,7 @@ export async function seedDemo(db: DB, now = Date.now()) {
   const DAY = 86_400_000;
 
   // Users: one manager and two sellers per store.
-  const people = [
-    ['st_ibanda', 'Espoir Bisimwa', 'manager', '2222', 'ibanda'],
-    ['st_ibanda', 'Grâce Mapendo', 'seller', '1234', null],
-    ['st_ibanda', 'Daniel Byamungu', 'seller', '5678', null],
-    ['st_kadutu', 'Aline Cirimwami', 'manager', '3333', 'kadutu'],
-    ['st_kadutu', 'Olivier Mugisho', 'seller', '1234', null],
-    ['st_kadutu', 'Sifa Nsimire', 'seller', '5678', null],
-    ['st_bagira', 'Patrick Mushagalusa', 'manager', '4444', 'bagira'],
-    ['st_bagira', 'Rachel Zawadi', 'seller', '1234', null],
-    ['st_bagira', 'Héritier Kabamba', 'seller', '5678', null],
-  ] as const;
-  const users: { id: string; storeId: string; role: Role }[] = [];
-  const userOps: Op[] = [];
-  for (const [i, [storeId, name, role, pin, username]] of people.entries()) {
-    const id = `u_${storeId.slice(3)}_${i}`;
-    users.push({ id, storeId, role: role as Role });
-    userOps.push(
-      patch('user', id, ownerId, { name, role, storeId, pinHash: await hashPin(pin, id), phone: `+2439900001${i}`, active: true }),
-    );
-  }
-  must(db, userOps);
-  for (const [i, [storeId, , , , username]] of people.entries()) {
-    if (username) setCredentials(db, `u_${storeId.slice(3)}_${i}`, username, `${username}2026`);
-  }
+  const users = await createStaff(db, ownerId, true);
 
   // Catalog, customers, suppliers, minimum stock.
   const products = PRODUCTS.map((p, i) => ({ ...p, id: `p_${String(i + 1).padStart(3, '0')}` }));

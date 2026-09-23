@@ -136,6 +136,14 @@ const schemas: Record<DocKind, z.ZodTypeAny> = {
     note: text().optional(),
   }),
   rate: z.object({ ...base, cdfPerUsd: z.number().min(100).max(100_000) }),
+  reversal: z.object({
+    ...base,
+    refKind: z.enum(['purchase', 'adjustment', 'count', 'transfer_send', 'transfer_receive', 'transfer_request', 'repayment', 'cash_close']),
+    refId: id,
+    reason: text(300).min(2),
+    movements: z.array(z.object({ storeId: id, productId: id, qty: signedQty })).max(5000),
+    ledger: z.array(z.object({ customerId: id, amountUSD: z.number().finite().min(-10_000_000).max(10_000_000) })).max(50),
+  }),
 };
 
 export function validateDoc(kind: DocKind, data: unknown): { ok: true; data: any } | { ok: false; error: string } {

@@ -8,6 +8,7 @@ import { fmtCDF, fmtUSD, roundCdf, toUSD, usdToCdf } from '../../shared/money';
 import { fmtDate, fmtDateTime } from '../../shared/time';
 import type { Currency, Customer, LedgerEntry, Repayment } from '../../shared/types';
 import { sendWhatsApp } from '../share';
+import { useReversedIds } from './admin';
 
 export function CustomersPage() {
   const s = useSession();
@@ -16,8 +17,9 @@ export function CustomersPage() {
   const [q, setQ] = useState('');
   const dq = useDebounced(q);
   const [tab, setTab] = useState<'debt' | 'all'>('debt');
+  const [showInactive, setShowInactive] = useState(false);
   const list = s.customers
-    .filter((c) => c.active && (!dq || norm(`${c.name} ${c.phone ?? ''}`).includes(norm(dq))))
+    .filter((c) => (showInactive ? !c.active : c.active) && (!dq || norm(`${c.name} ${c.phone ?? ''}`).includes(norm(dq))))
     .filter((c) => tab === 'all' || (balances.get(c.id)?.balanceUSD ?? 0) > 0.004)
     .sort((a, b) => (tab === 'debt' ? (balances.get(b.id)?.balanceUSD ?? 0) - (balances.get(a.id)?.balanceUSD ?? 0) : a.name.localeCompare(b.name)));
   const totalDebt = [...balances.values()].reduce((a, b) => a + Math.max(0, b.balanceUSD), 0);
@@ -40,6 +42,12 @@ export function CustomersPage() {
       </div>
       <Seg value={tab} onChange={setTab} options={[{ value: 'debt', label: t('customers.withDebt') }, { value: 'all', label: t('customers.all') }]} />
       <input style={{ marginTop: 8 }} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} placeholder={t('customer.searchPh')} aria-label={t('customer.searchPh')} />
+      {s.can('price.edit') && (
+        <label class="check">
+          <input type="checkbox" checked={showInactive} onChange={(e) => { setShowInactive(e.currentTarget.checked); if (e.currentTarget.checked) setTab('all'); }} />
+          {t('customers.showInactive')}
+        </label>
+      )}
       <div class="list" style={{ marginTop: 8 }}>
         {list.map((c) => {
           const b = balances.get(c.id);
@@ -69,6 +77,7 @@ export function CustomerPage(props: { id: string }) {
   const c = s.customers.find((x) => x.id === props.id);
   const ledger = useLive(() => db.ledger.where('customerId').equals(props.id).toArray() as Promise<LedgerEntry[]>, [props.id], [] as LedgerEntry[]);
   const bal = useMemo(() => customerBalances(ledger, engine.now()).get(props.id), [ledger]);
+  const reversed = useReversedIds();
   const [method, setMethod] = useState<Repayment['method']>('cash');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [amount, setAmount] = useState('');
@@ -140,15 +149,23 @@ export function CustomerPage(props: { id: string }) {
       )}
       <Section title={t('customer.history')} />
       <div class="list">
-        {[...ledger].sort((a, b) => b.at - a.at).map((e) => (
-          <a class="item" href={e.kind === 'credit_sale' ? `#/sale/${e.ref}` : undefined} style={{ cursor: e.kind === 'credit_sale' ? 'pointer' : 'default' }}>
+        {[...ledger].sort((a, b) => b.at - a.at).map((e) => {
+          const canCancel = e.kind === 'repayment' && s.can('doc.reverse') && !reversed.has(e.ref);
+          const href = e.kind === 'credit_sale' ? `#/sale/${e.ref}` : canCancel ? `#/reverse/repayment/${e.ref}` : undefined;
+          return (
+          <a class="item" href={href} style={{ cursor: href ? 'pointer' : 'default' }}>
             <div class="main">
-              <div class="title">{t(`ledger.${e.kind}`)}{(e as any).pending ? <span class="tag warn" style={{ marginLeft: 6 }}>{t('sync.notSent')}</span> : null}</div>
-              <div class="sub">{fmtDateTime(e.at)} · {s.stores.find((x) => x.id === e.storeId)?.name}</div>
+              <div class="title">
+                {t(`ledger.${e.kind}`)}
+                {(e as any).pending ? <span class="tag warn" style={{ marginLeft: 6 }}>{t('sync.notSent')}</span> : null}
+                {e.kind === 'repayment' && reversed.has(e.ref) ? <span class="tag" style={{ marginLeft: 6 }}>{t('reverse.tag')}</span> : null}
+              </div>
+              <div class="sub">{fmtDateTime(e.at)} · {s.stores.find((x) => x.id === e.storeId)?.name}{canCancel ? ` · ${t('reverse.tapToCancel')}` : ''}</div>
             </div>
             <div class={`end usd ${e.amountUSD < 0 ? 'pos' : ''}`}>{e.amountUSD > 0 ? '+' : ''}{fmtUSD(e.amountUSD)}</div>
           </a>
-        ))}
+          );
+        })}
         {!ledger.length && <Empty>{t('customer.noHistory')}</Empty>}
       </div>
       {c.note && <p class="muted">{c.note}</p>}

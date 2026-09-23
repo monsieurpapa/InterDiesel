@@ -83,7 +83,11 @@ function useDocs(storeId: string | null, from: number, to: number) {
   );
   const voids = useLive(() => db.sale_void.toArray() as Promise<SaleVoid[]>, [], [] as SaleVoid[]);
   const reps = useLive(
-    () => db.repayment.where('at').between(from, to).toArray().then((r: Repayment[]) => r.filter((x) => !storeId || x.storeId === storeId)),
+    async () => {
+      const rev = new Set((await db.reversal.toArray()).map((r: any) => r.refId));
+      const r = (await db.repayment.where('at').between(from, to).toArray()) as Repayment[];
+      return r.filter((x) => (!storeId || x.storeId === storeId) && !rev.has(x.id));
+    },
     [storeId, from, to],
     [] as Repayment[],
   );

@@ -23,7 +23,8 @@ export type Action =
   | 'audit.view'
   | 'user.manage'
   | 'store.manage'
-  | 'device.manage';
+  | 'device.manage'
+  | 'doc.reverse';
 
 const SELLER: Action[] = ['sell', 'repay', 'customer.edit', 'transfer.request'];
 const MANAGER: Action[] = [
@@ -48,7 +49,7 @@ const MANAGER: Action[] = [
 const MATRIX: Record<Role, Set<Action>> = {
   seller: new Set(SELLER),
   manager: new Set(MANAGER),
-  owner: new Set<Action>([...MANAGER, 'report.allStores', 'user.manage', 'store.manage', 'device.manage']),
+  owner: new Set<Action>([...MANAGER, 'report.allStores', 'user.manage', 'store.manage', 'device.manage', 'doc.reverse']),
 };
 
 export function can(role: Role | undefined | null, action: Action): boolean {
@@ -67,6 +68,7 @@ export const DOC_ACTION: Record<DocKind, Action> = {
   transfer_receive: 'transfer.receive',
   cash_close: 'cash.close',
   rate: 'rate.set',
+  reversal: 'doc.reverse',
 };
 
 /** Which action a patch needs. Price and cost changes need price.edit. */

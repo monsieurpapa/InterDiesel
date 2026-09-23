@@ -4,7 +4,7 @@ import { readdirSync, statSync, unlinkSync } from 'node:fs';
 import { getRecord, openDb } from './db';
 import { buildApp, ensureDir } from './app';
 import { startDailyJobs } from './notify/jobs';
-import { bootstrap, seedDemo } from './seed';
+import { bootstrap, createStaff, seedDemo } from './seed';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dataDir = resolve(process.env.DATA_DIR ?? resolve(here, '../data'));
@@ -14,7 +14,11 @@ const db = openDb(resolve(dataDir, 'interdiesel.sqlite'));
 // First start on a hosting service without a terminal: create the owner (or the demo)
 // from environment settings. Does nothing once the database has an owner.
 async function firstStart() {
-  if (getRecord(db, 'user', 'u_owner')) return;
+  if (getRecord(db, 'user', 'u_owner')) {
+    // Adds the default team once (skips people who already exist).
+    if (process.env.SEED_STAFF === '1') await createStaff(db);
+    return;
+  }
   if (process.env.SEED_DEMO === '1') {
     await seedDemo(db);
     console.log('Données de démonstration créées.');

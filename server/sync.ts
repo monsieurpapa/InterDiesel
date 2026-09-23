@@ -3,7 +3,7 @@
 // (movements, stock levels, debt ledger, audit, alerts), so the server state is
 // always consistent even if the process dies mid-sync.
 
-import { derive, docScope, receiveIdFor, stockId, voidIdFor } from '../shared/derive';
+import { derive, docScope, inverseOf, receiveIdFor, reversalIdFor, stockId, voidIdFor } from '../shared/derive';
 import { applyPatch } from '../shared/merge';
 import { can, DOC_ACTION, patchAction } from '../shared/permissions';
 import { validateDoc, validatePatch } from '../shared/schemas';
@@ -136,7 +136,12 @@ function applyDoc(db: DB, device: Device, user: User, kind: DocKind, raw: any, o
     if (existing.data.deviceId === device.id) return 'duplicate';
     throw new Rejected('id_taken');
   }
-  if ((opId.startsWith('void_') && kind !== 'sale_void') || (opId.startsWith('recv_') && kind !== 'transfer_receive')) throw new Rejected('reserved_id');
+  if (
+    (opId.startsWith('void_') && kind !== 'sale_void') ||
+    (opId.startsWith('recv_') && kind !== 'transfer_receive') ||
+    (opId.startsWith('rev_') && kind !== 'reversal')
+  )
+    throw new Rejected('reserved_id');
   const v = validateDoc(kind, raw);
   if (!v.ok) throw new Rejected(`invalid:${v.error}`);
   const d = v.data;
@@ -174,8 +179,22 @@ function applyDoc(db: DB, device: Device, user: User, kind: DocKind, raw: any, o
     case 'transfer_request':
       if (d.fromStoreId === d.storeId) throw new Rejected('same_store');
       break;
+    case 'reversal': {
+      if (d.id !== reversalIdFor(d.refId)) throw new Rejected('reversal_id');
+      const ref = getRecord(db, d.refKind, d.refId)?.data;
+      if (!ref) throw new Rejected('unknown_document');
+      if (ref.storeId !== d.storeId) throw new Rejected('wrong_store_for_device');
+      if (d.refKind === 'transfer_send') {
+        const recv = receiveIdFor(d.refId);
+        if (getRecord(db, 'transfer_receive', recv) && !getRecord(db, 'reversal', reversalIdFor(recv))) throw new Rejected('transfer_already_received');
+      }
+      // The server trusts its own copy of the original, not what the device computed.
+      Object.assign(d, inverseOf(d.refKind, ref));
+      break;
+    }
     case 'transfer_receive': {
       if (d.id !== receiveIdFor(d.sendId)) throw new Rejected('receive_id');
+      if (getRecord(db, 'reversal', reversalIdFor(d.sendId))) throw new Rejected('transfer_cancelled');
       const send = getRecord(db, 'transfer_send', d.sendId)?.data;
       if (!send) throw new Rejected('unknown_transfer');
       if (send.toStoreId !== d.storeId || send.storeId !== d.fromStoreId) throw new Rejected('transfer_store_mismatch');
@@ -237,6 +256,8 @@ function docSummary(kind: DocKind, d: any): string {
       return `${d.qty > 0 ? '+' : ''}${d.qty} · ${d.reason}`;
     case 'rate':
       return `${d.cdfPerUsd}`;
+    case 'reversal':
+      return `${d.refKind} · ${d.reason}`;
     default:
       return String(d.lines?.length ?? '');
   }
