@@ -1,0 +1,13 @@
+# Local test on your computer with Docker Desktop (no domain, no HTTPS).
+#   docker compose -f docker-compose.local.yml up -d --build
+# Then open http://localhost:3000 in Chrome. Demo data is loaded on first start.
+# Phones cannot use this local version (they need HTTPS): see README section 2.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data-local:/data
+    command: ["sh", "-c", "[ -f /data/interdiesel.sqlite ] || node dist/cli.mjs demo; exec node dist/index.mjs"]
+    restart: unless-stopped

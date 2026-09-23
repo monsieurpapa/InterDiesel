@@ -1,0 +1,37 @@
+# Fly.io deployment (≈ $2–3 per month). Change `app` to a unique name.
+app = "interdiesel"
+primary_region = "jnb"   # Johannesburg, closest region to Bukavu
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  DATA_DIR = "/data"
+  PORT = "3000"
+  AUTO_BACKUP = "1"
+
+# The SQLite database lives on this volume (1 GB is plenty for years of sales).
+[mounts]
+  source = "interdiesel_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Stop the machine when nobody uses it (cheaper); it starts again in ~2 s on the next request.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
