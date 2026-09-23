@@ -17,10 +17,10 @@ AD=$(oci iam availability-domain list -c $C --query 'data[0].name' --raw-output)
 SUB=$(oci network subnet list -c $C --query 'data[0].id' --raw-output)
 IMG=$(oci compute image list -c $C --operating-system "Canonical Ubuntu" --operating-system-version "22.04" --shape VM.Standard.E2.1.Micro --sort-by TIMECREATED --query 'data[0].id' --raw-output)
 echo "Creation du nouveau serveur..."
-ID=$(oci compute instance launch -c $C --availability-domain $AD --shape VM.Standard.E2.1.Micro --image-id $IMG --subnet-id $SUB --assign-public-ip false --ssh-authorized-keys-file ~/.ssh/id_rsa.pub --display-name interdiesel-prod --wait-for-state RUNNING --query data.id --raw-output 2>/dev/null)
+ID=$(oci compute instance launch -c $C --availability-domain $AD --shape VM.Standard.E2.1.Micro --image-id $IMG --subnet-id $SUB --assign-public-ip false --ssh-authorized-keys-file ~/.ssh/id_rsa.pub --display-name interdiesel-prod --wait-for-state RUNNING --query data.id --raw-output)
 VNIC=$(oci compute instance list-vnics --instance-id $ID --query 'data[0].id' --raw-output)
 PRIVID=$(oci network private-ip list --vnic-id $VNIC --query 'data[0].id' --raw-output)
-IP=$(oci network public-ip create -c $C --lifetime RESERVED --display-name interdiesel-ip --private-ip-id $PRIVID --wait-for-state ASSIGNED --query 'data."ip-address"' --raw-output 2>/dev/null)
+IP=$(oci network public-ip create -c $C --lifetime RESERVED --display-name interdiesel-ip --private-ip-id $PRIVID --wait-for-state ASSIGNED --query 'data."ip-address"' --raw-output)
 printf 'IP=%s\nINSTANCE=%s\n' "$IP" "$ID" > ~/interdiesel.env
 echo "IP fixe: $IP. Attente SSH..."
 for i in $(seq 1 60); do ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 ubuntu@$IP true 2>/dev/null && break; sleep 10; done
