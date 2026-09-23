@@ -14,7 +14,7 @@ head -c 15 backup.sqlite 2>/dev/null | grep -q "SQLite format 3" || { echo "ERRE
 echo "Sauvegarde OK ($(du -h backup.sqlite | cut -f1))"
 [ -f ~/.ssh/id_ed25519 ] || ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519 -q
 AD=$(oci iam availability-domain list -c $C --query 'data[0].name' --raw-output)
-SUB=$(oci network subnet list -c $C --display-name interdiesel-subnet --query 'data[0].id' --raw-output)
+SUB=$(oci network subnet list -c $C --query 'data[0].id' --raw-output)
 IMG=$(oci compute image list -c $C --operating-system "Canonical Ubuntu" --operating-system-version "22.04" --shape VM.Standard.E2.1.Micro --sort-by TIMECREATED --query 'data[0].id' --raw-output)
 echo "Creation du nouveau serveur..."
 ID=$(oci compute instance launch -c $C --availability-domain $AD --shape VM.Standard.E2.1.Micro --image-id $IMG --subnet-id $SUB --assign-public-ip false --ssh-authorized-keys-file ~/.ssh/id_ed25519.pub --display-name interdiesel-prod --wait-for-state RUNNING --query data.id --raw-output 2>/dev/null)
