@@ -34,6 +34,10 @@ export default defineConfig({
       workbox: {
         // The app shell is precached; the barcode WebAssembly (1 MB) is only fetched
         // on computers that need it, then kept for offline use.
+        // a new version takes over as soon as it is downloaded (the page reloads itself),
+        // instead of waiting until every tab and the installed app are closed
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
         globIgnores: ['**/zxing*', '**/ponyfill*'],
         navigateFallback: '/index.html',
