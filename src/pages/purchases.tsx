@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { ulid } from 'ulid';
-import { db, engine, go, t, toast, useLive, useSession } from '../state';
+import { db, engine, go, notifySave, t, toast, useLive, useSession } from '../state';
 import { Empty, Field, Icon, Page, Section } from '../ui';
 import { ProductPick } from './stock';
 import { ReverseControl, useReversedIds } from './admin';
@@ -84,7 +84,7 @@ export function PurchaseNewPage() {
         if (p && l.unitCostUSD > 0 && p.costUSD !== l.unitCostUSD) await engine.patch('product', p.id, s.user.id, { costUSD: l.unitCostUSD });
       }
     }
-    toast(t('purchases.saved'));
+    toast(t('purchases.saved'), 'success');
     go(`/purchase/${doc.id}`);
   };
 
@@ -204,7 +204,7 @@ export function SupplierEditPage(props: { id?: string }) {
     const id = props.id ?? `f_${ulid()}`;
     const fields = existing ? (f ?? {}) : v;
     if (Object.keys(fields).length) await engine.patch('supplier', id, s.user.id, fields as Record<string, unknown>);
-    toast(t('common.saved'));
+    notifySave(v.name, existing, fields);
     go('/suppliers');
   };
   if (props.id && !existing) return null;

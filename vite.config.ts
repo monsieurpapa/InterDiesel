@@ -34,7 +34,7 @@ export default defineConfig({
       workbox: {
         // The app shell is precached; the barcode WebAssembly (1 MB) is only fetched
         // on computers that need it, then kept for offline use.
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
         globIgnores: ['**/zxing*', '**/ponyfill*'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],

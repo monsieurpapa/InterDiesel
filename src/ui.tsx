@@ -1,6 +1,7 @@
 import type { ComponentChildren, JSX } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import { back, t, useSession } from './state';
+import { useContext, useEffect, useState } from 'preact/hooks';
+import { back, SessionContext, t, useRoute, useSession, type ToastKind } from './state';
+import { trailFor } from './nav';
 import { fmtCDF, fmtUSD, productPriceCDF, usdToCdf } from '../shared/money';
 import type { Product } from '../shared/types';
 
@@ -28,22 +29,46 @@ export const Icon = {
   whatsapp: P('M3 21l1.6-4.8A8.5 8.5 0 1 1 7.8 19.4L3 21zM9 9.5c0 3 2.5 5.5 5.5 5.5l1.2-1.4-2-1-1 .9a4 4 0 0 1-2.2-2.2l.9-1-1-2L9 9.5z'),
   sync: P('M21 12a9 9 0 0 1-15.4 6.4L3 16M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M3 21v-5h5'),
   lock: P('M6 11h12v10H6zM8 11V7a4 4 0 1 1 8 0v4'),
+  info: P('M12 16v-5M12 8h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z'),
+  ok: P('M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4L12 14l-3-3'),
   alert: P('M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'),
 };
 
 // ---------- layout ----------
+/**
+ * Page frame: a short line with the back button and the breadcrumb trail (where this
+ * page sits in the app), then the title and the page actions.
+ */
 export function Page(props: { title: string; back?: string | boolean; actions?: ComponentChildren; children: ComponentChildren; class?: string }) {
+  const session = useContext(SessionContext);
+  const { path, query } = useRoute();
+  const trail = trailFor(path, session, query);
+  const hasBack = (props.back !== undefined && props.back !== false) || trail.length > 0;
+  const fallback = typeof props.back === 'string' ? props.back : trail[trail.length - 1]?.href ?? '/';
   return (
     <div class={props.class}>
-      <div class={props.back !== undefined && props.back !== false ? 'ph has-back' : 'ph'}>
-        {props.back !== undefined && props.back !== false && (
-          <button class="back" onClick={() => back(typeof props.back === 'string' ? props.back : '/')} aria-label={t('common.back')}>
-            <Icon.back width={22} height={22} />
-            <span>{t('common.back')}</span>
+      {hasBack && (
+        <div class="ph-nav">
+          <button class={trail.length ? 'back icon-only' : 'back'} onClick={() => back(fallback)} aria-label={t('common.back')} title={t('common.back')}>
+            <Icon.back width={24} height={24} />
+            {!trail.length && <span>{t('common.back')}</span>}
           </button>
-        )}
+          {trail.length > 0 && (
+            <nav class="crumbs" aria-label={t('nav.breadcrumb')}>
+              <ol>
+                {trail.map((c) => (
+                  <li>
+                    <a href={`#${c.href}`}>{c.label}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
+        </div>
+      )}
+      <div class="ph">
         <h1>{props.title}</h1>
-        {props.actions}
+        {props.actions && <div class="ph-actions">{props.actions}</div>}
       </div>
       {props.children}
     </div>
@@ -73,7 +98,7 @@ export function Field(props: { label: string; hint?: string; children: Component
 }
 
 export function Empty(props: { children: ComponentChildren }) {
-  return <p class="muted" style={{ padding: '16px 4px' }}>{props.children}</p>;
+  return <p class="empty">{props.children}</p>;
 }
 
 export function Seg<T extends string>(props: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
@@ -171,4 +196,32 @@ export function useDebounced<T>(v: T, ms = 150): T {
     return () => clearTimeout(id);
   }, [v, ms]);
   return d;
+}
+
+// ---------- notifications ----------
+export interface ToastItem {
+  id: number;
+  msg: string;
+  kind: ToastKind;
+}
+const TOAST_ICON = { success: Icon.ok, info: Icon.info, warning: Icon.alert, error: Icon.alert };
+
+/** Stack of coloured notifications; tap one to close it. */
+export function Toasts(props: { items: ToastItem[]; onClose: (id: number) => void }) {
+  return (
+    <div class="toasts">
+      {props.items.map((x) => {
+        const I = TOAST_ICON[x.kind];
+        return (
+          <button type="button" class={`toast ${x.kind}`} role={x.kind === 'error' ? 'alert' : 'status'} aria-live={x.kind === 'error' ? 'assertive' : 'polite'} onClick={() => props.onClose(x.id)}>
+            <I />
+            <span class="t-body">
+              <span class="t-title">{t(`toast.kind.${x.kind}`)}</span>
+              {x.msg}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }

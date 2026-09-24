@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { ulid } from 'ulid';
-import { back, db, engine, go, t, toast, useLive, useSession, errText } from '../state';
+import { back, db, engine, go, notifySave, t, toast, useLive, useSession, errText } from '../state';
 import { inverseOf, receiveIdFor, reversalIdFor } from '../../shared/derive';
 import { fmtUSD } from '../../shared/money';
 import { Empty, Field, Icon, Page, Section } from '../ui';
@@ -21,7 +21,10 @@ export function AlertsPage() {
     [s.storeId, showAll],
     [] as Alert[],
   );
-  const resolve = (a: Alert) => engine.patch('alert', a.id, s.user.id, { resolved: true, resolvedBy: s.user.id, resolvedAt: engine.now() });
+  const resolve = async (a: Alert) => {
+    await engine.patch('alert', a.id, s.user.id, { resolved: true, resolvedBy: s.user.id, resolvedAt: engine.now() });
+    toast(t('toast.alertResolved'), 'info');
+  };
   const describe = (a: Alert) => {
     const p = a.productId ? s.productById.get(a.productId)?.name ?? a.productId : '';
     const store = s.stores.find((x) => x.id === a.storeId)?.name ?? '';
@@ -65,7 +68,25 @@ export function AuditPage() {
     [] as AuditEntry[],
   );
   const users = new Map(s.users.map((u) => [u.id, u.name]));
-  const val = (v: unknown) => (v === null || v === undefined || v === '' ? '—' : typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v));
+  // show names instead of internal ids (st_…, p_…, u_…) so the journal reads like plain French
+  const storeName = (id: string) => s.stores.find((x) => x.id === id)?.name ?? id;
+  const val = (k: string, v: unknown): string => {
+    if (v === null || v === undefined || v === '') return '—';
+    if (k === 'pinHash') return '••••';
+    if (typeof v === 'boolean') return k === 'active' ? t(v ? 'common.active' : 'common.inactive') : t(v ? 'common.yes' : 'common.no');
+    if (typeof v === 'string') {
+      if (/storeid$/i.test(k)) return storeName(v);
+      if (k === 'productId') return s.productById.get(v)?.name ?? v;
+      if (k === 'customerId') return s.customers.find((c) => c.id === v)?.name ?? v;
+      if (k === 'userId' || k === 'resolvedBy') return users.get(v) ?? v;
+    }
+    if (typeof v === 'number' && /At$/.test(k) && v > 1e12) return fmtDateTime(v);
+    return typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v);
+  };
+  const summary = (x: string) => {
+    const m = /^(st_[\w-]+):(p_[\w-]+)$/.exec(x ?? '');
+    return m ? `${s.productById.get(m[2])?.name ?? m[2]} (${storeName(m[1]).replace(/^Inter-Diesel\s+/i, '')})` : x;
+  };
   if (!s.can('audit.view')) return <Page title={t('audit.title')} back><Empty>{t('error.forbidden')}</Empty></Page>;
   return (
     <Page title={t('audit.title')} back="/menu">
@@ -74,17 +95,17 @@ export function AuditPage() {
         {rows.map((a) => (
           <div class="item" style={{ cursor: 'default' }}>
             <div class="main">
-              <div class="title">{t(`audit.${a.kind}`) === `audit.${a.kind}` ? a.kind : t(`audit.${a.kind}`)} · {a.summary}</div>
+              <div class="title">{t(`audit.${a.kind}`) === `audit.${a.kind}` ? a.kind : t(`audit.${a.kind}`)} · {summary(a.summary)}</div>
               <div class="sub">{fmtDateTime(a.at)} · {users.get(a.userId) ?? a.userId} · {s.stores.find((x) => x.id === a.storeId)?.name ?? ''}</div>
               {a.changes &&
                 Object.entries(a.changes)
-                  .filter(([k]) => k !== 'fits')
+                  .filter(([k]) => k !== 'fits' && !(a.kind === 'minstock' && (k === 'storeId' || k === 'productId')))
                   .slice(0, 4)
                   .map(([k, pair]) => {
                     const [b, c] = pair as [unknown, unknown];
                     return (
                       <div class="sub">
-                        {t(`field.${k}`) === `field.${k}` ? k : t(`field.${k}`)}: {val(b)} → <b>{val(c)}</b>
+                        {t(`field.${k}`) === `field.${k}` ? k : t(`field.${k}`)} : {val(k, b)} → <b>{val(k, c)}</b>
                       </div>
                     );
                   })}
@@ -109,7 +130,7 @@ export function RatePage() {
     if (n < 100) return;
     await engine.createDoc<RateDoc>('rate', s.user.id, s.storeId, { cdfPerUsd: n });
     setV('');
-    toast(t('rate.saved', { rate: n }));
+    toast(t('rate.saved', { rate: n }), 'success');
   };
   return (
     <Page title={t('rate.title')} back="/menu">
@@ -161,7 +182,7 @@ export function SyncPage() {
   const now = async () => {
     try {
       await engine.sync();
-      toast(t('sync.done'));
+      toast(t('sync.done'), 'success');
     } catch {
       toast(navigator.onLine ? t('sync.failed') : t('sync.offline'), 'error');
     }
@@ -279,10 +300,10 @@ export function DevicePage() {
     <Page title={t('device.title')} back="/menu">
       <table class="facts">
         <tbody>
-          <tr><th>{t('device.code')}</th><td class="n">{d.deviceCode}</td></tr>
-          <tr><th>{t('device.store')}</th><td class="n">{d.storeId ? s.stores.find((x) => x.id === d.storeId)?.name : t('enroll.allStores')}</td></tr>
-          <tr><th>{t('device.server')}</th><td class="n">{d.serverUrl || location.origin}</td></tr>
-          <tr><th>{t('device.version')}</th><td class="n">{__APP_VERSION__}</td></tr>
+          <tr><th>{t('device.code')}</th><td class="n wrap">{d.deviceCode}</td></tr>
+          <tr><th>{t('device.store')}</th><td class="n wrap">{d.storeId ? s.stores.find((x) => x.id === d.storeId)?.name : t('enroll.allStores')}</td></tr>
+          <tr><th>{t('device.server')}</th><td class="n wrap">{d.serverUrl || location.origin}</td></tr>
+          <tr><th>{t('device.version')}</th><td class="n wrap">{__APP_VERSION__}</td></tr>
         </tbody>
       </table>
 
@@ -355,7 +376,7 @@ export function UsersPage() {
                 <a class="item" href={`#/user/${u.id}`}>
                   <div class="main">
                     <div class="title">{u.name}{!u.active && <span class="tag" style={{ marginLeft: 6 }}>{t('common.inactive')}</span>}</div>
-                    <div class="sub">{t(`role.${u.role}`)} · {u.phone}</div>
+                    <div class="sub">{[t(`role.${u.role}`), u.phone].filter(Boolean).join(" · ")}{!u.active && <> <span class="tag bad">{t("common.inactive")}</span></>}</div>
                   </div>
                 </a>
               ))}
@@ -390,7 +411,7 @@ export function UserEditPage(props: { id?: string }) {
     if (fields.role === 'owner') fields.storeId = null;
     if (pin) fields.pinHash = await hashPin(pin, id);
     if (Object.keys(fields).length) await engine.patch('user', id, s.user.id, fields);
-    toast(t('common.saved'));
+    notifySave(v.name.trim(), existing, fields);
     go('/users');
   };
   const setCredentials = async (e: Event) => {
@@ -405,9 +426,11 @@ export function UserEditPage(props: { id?: string }) {
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'network');
       setMsg(t('users.loginSaved'));
+      toast(t('users.loginSaved'), 'success');
       setLogin({ newUsername: '', newPassword: '', ownerPassword: '' });
     } catch (err) {
       setMsg(errText((err as Error).message));
+      toast(errText((err as Error).message), 'error');
     }
   };
 
@@ -491,7 +514,7 @@ export function StoreEditPage(props: { id: string }) {
     const fields = existing ? f : { ...v, code: v.code.toUpperCase() };
     if (fields.code) fields.code = fields.code.toUpperCase();
     if (Object.keys(fields).length) await engine.patch('store', props.id, s.user.id, fields as Record<string, unknown>);
-    toast(t('common.saved'));
+    notifySave(v.name, existing, fields as Record<string, unknown>);
     go('/stores');
   };
   return (
@@ -566,7 +589,7 @@ export function ReversePage(props: { kind: string; id: string }) {
       }
       const own = inverseOf(kind, doc);
       await engine.createDoc<Reversal>('reversal', s.user.id, doc.storeId, { id: reversalIdFor(doc.id), refKind: kind, refId: doc.id, reason: reason.trim(), ...own });
-      toast(t('reverse.saved'));
+      toast(t('reverse.saved'), 'warning');
       back();
     } catch {
       toast(t('error.generic'), 'error');

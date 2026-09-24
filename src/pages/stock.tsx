@@ -68,11 +68,11 @@ export function StockPage() {
       )}
       {tab === 'low' && rows.length > 0 && (
         <div class="row" style={{ marginTop: 8 }}>
-          <button class="btn wa grow" onClick={shareLow}>
+          <button class="btn wa" style={{ flex: '1 1 230px' }} onClick={shareLow}>
             <Icon.whatsapp />
             {t('stock.shareLow')}
           </button>
-          {s.can('purchase') && <a class="btn" href="#/purchase/new">{t('stock.order')}</a>}
+          {s.can('purchase') && <a class="btn" style={{ flex: '1 1 120px' }} href="#/purchase/new">{t('stock.order')}</a>}
         </div>
       )}
       {tab === 'neg' && rows.length > 0 && <div class="notice bad" style={{ marginTop: 8 }}>{t('stock.negativeExplain')}</div>}
@@ -119,7 +119,7 @@ export function AdjustPage(props: { productId: string }) {
     const n = parseInt(qty) || 0;
     if (!p || n <= 0 || note.trim().length < 2) return;
     await engine.createDoc<Adjustment>('adjustment', s.user.id, s.storeId, { productId: p.id, qty: dir === 'out' ? -n : n, reason, note: note.trim() });
-    toast(t('common.saved'));
+    toast(t('toast.adjusted', { name: p.name, qty: dir === 'out' ? `-${n}` : `+${n}` }), 'success');
     go(`/product/${p.id}`);
   };
 

@@ -584,6 +584,7 @@ function CustomerSheet(props: { onClose: () => void; onPick: (c: Customer) => vo
     if (!name.trim()) return;
     const id = `c_${ulid()}`;
     await engine.patch('customer', id, s.user.id, { name: name.trim(), phone: phone.trim(), note: '', active: true });
+    toast(t('toast.created', { what: name.trim() }), 'success');
     props.onPick({ id, name: name.trim(), phone: phone.trim(), active: true });
   };
 

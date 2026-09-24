@@ -20,7 +20,7 @@ export function productPriceCDF(p: Pick<Product, 'priceUSD' | 'priceCDF'>, rate:
   return p.priceCDF && p.priceCDF > 0 ? p.priceCDF : usdToCdf(p.priceUSD, rate);
 }
 
-const nbsp = ' ';
+const nbsp = '\u00a0'; // plain no-break space: every font has it (the narrow one is missing in Inter)
 export function fmtUSD(n: number): string {
   const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, nbsp);
   return `${n < 0 ? '-' : ''}$${s}`;

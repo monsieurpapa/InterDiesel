@@ -107,13 +107,32 @@ export function back(fallback = '/') {
   else go(fallback);
 }
 
-/** Short-lived message at the bottom of the screen. */
-let toastFn: ((msg: string, kind?: 'ok' | 'error') => void) | null = null;
+/**
+ * Short-lived notification at the top of the screen. The colour tells what happened:
+ * success (green) = created or done, info (blue) = changed, warning (amber) =
+ * disabled, cancelled or removed, error (red) = it did not work.
+ */
+export type ToastKind = 'success' | 'info' | 'warning' | 'error';
+let toastFn: ((msg: string, kind: ToastKind) => void) | null = null;
 export function setToastHandler(fn: typeof toastFn) {
   toastFn = fn;
 }
-export function toast(msg: string, kind: 'ok' | 'error' = 'ok') {
-  toastFn?.(msg, kind);
+export function toast(msg: string, kind: ToastKind | 'ok' = 'success') {
+  toastFn?.(msg, kind === 'ok' ? 'success' : kind);
+}
+
+/**
+ * Notification after saving a record from a form, in the right colour:
+ * new -> "created" (green); active switched off -> "disabled" (amber);
+ * switched back on -> "enabled again" (green); other changes -> "updated" (blue).
+ */
+export function notifySave(what: string, existing: { active?: boolean } | undefined | null, changed: Record<string, unknown>) {
+  if (!existing) return toast(t('toast.created', { what }), 'success');
+  if (!Object.keys(changed).length) return toast(t('toast.noChange'), 'info');
+  const wasActive = existing.active ?? true;
+  if (changed.active === false && wasActive) return toast(t('toast.disabled', { what }), 'warning');
+  if (changed.active === true && !wasActive) return toast(t('toast.enabled', { what }), 'success');
+  toast(t('toast.updated', { what }), 'info');
 }
 
 /** Human message for an error code from the server or the network. */

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { ulid } from 'ulid';
-import { db, engine, go, t, toast, useLive, useSession, useStock } from '../state';
+import { db, engine, go, notifySave, t, toast, useLive, useSession, useStock } from '../state';
 import { Empty, Field, Icon, Money, Page, Qty, Section, fitsText, matchProduct, useDebounced } from '../ui';
 import { Scanner } from '../scanner';
 import { fmtUSD, productPriceCDF, round2, usdToCdf, fmtCDF } from '../../shared/money';
@@ -135,7 +135,7 @@ export function ProductPage(props: { id: string }) {
     const n = Math.max(0, parseInt(minInput ?? '') || 0);
     await engine.patch('minstock', stockId(s.storeId, p.id), s.user.id, { storeId: s.storeId, productId: p.id, min: n });
     setMinInput(null);
-    toast(t('common.saved'));
+    toast(t('toast.minSaved', { name: p.name, n }), 'info');
   };
 
   return (
@@ -304,7 +304,7 @@ export function ProductEditPage(props: { id?: string }) {
     const changed = existing ? Object.fromEntries(Object.entries(fields).filter(([k, v]) => JSON.stringify((existing as any)[k]) !== JSON.stringify(v))) : fields;
     if (Object.keys(changed).length) await engine.patch('product', id, s.user.id, changed);
     if (photo) await engine.patch('photo', id, s.user.id, { dataUrl: photo });
-    toast(t('common.saved'));
+    notifySave(fields.name as string, existing, photo ? { ...changed, photo: 1 } : changed);
     go(`/product/${id}`);
   };
   const dup = f.ref.trim() ? s.products.find((p) => p.id !== props.id && p.ref.trim().toLowerCase() === f.ref.trim().toLowerCase()) : undefined;

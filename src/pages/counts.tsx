@@ -72,7 +72,7 @@ export function CountNewPage() {
     if (!lines.length) return;
     const doc = await engine.createDoc<Count>('count', s.user.id, s.storeId, { lines, note: note || undefined });
     setCounted({});
-    toast(t('counts.saved'));
+    toast(t('counts.saved'), 'success');
     go(`/count/${doc.id}`);
   };
 

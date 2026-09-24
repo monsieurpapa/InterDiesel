@@ -183,7 +183,7 @@ export function TransferNewPage(props: { requestId: string | null }) {
     const ls = current.filter((l) => l.qty > 0);
     if (!ls.length || !dest) return;
     const doc = await engine.createDoc<TransferSend>('transfer_send', s.user.id, s.storeId, { toStoreId: dest, requestId: req?.id ?? null, lines: ls, note: note || undefined });
-    toast(t('transfers.sent'));
+    toast(t('transfers.sent'), 'success');
     go(`/transfer/${doc.id}`);
   };
 
@@ -221,6 +221,7 @@ export function RequestNewPage(props: { productId: string | null }) {
     const ls = lines.filter((l) => l.qty > 0);
     if (!ls.length) return;
     const doc = await engine.createDoc<TransferRequest>('transfer_request', s.user.id, s.storeId, { fromStoreId: from, lines: ls, note: note || undefined });
+    toast(t('toast.requestSent'), 'success');
     const fromStore = s.stores.find((x) => x.id === from)!;
     await sendWhatsApp({ kind: 'transfer_request', to: fromStore.phone, text: transferRequestText(t, doc, fromStore, s.store, s.productById) });
     go(`/transfer/${doc.id}`);
@@ -306,7 +307,7 @@ export function TransferPage(props: { id: string }) {
       lines: send.lines.map((l) => ({ productId: l.productId, qty: qtyGot(l.productId, l.qty) })),
       note: note || undefined,
     });
-    toast(t('transfers.receivedOk'));
+    toast(t('transfers.receivedOk'), 'success');
   };
 
   return (

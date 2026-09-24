@@ -187,7 +187,7 @@ export function VoidPage(props: { id: string }) {
         creditUSD: credit,
         refundUSD: refund ? paidNow : 0,
       });
-      toast(t('void.done'));
+      toast(t('void.done'), 'warning');
       if (redo) {
         // Correction: the same items go back in the cart so the sale can be made again, right.
         try {

@@ -35,7 +35,7 @@ export function CashPage() {
     const c: Record<string, number> = {};
     for (const k of keys) c[k] = counted[k] === undefined || counted[k] === '' ? round2(expected[k] ?? 0) : cnt(k);
     const doc = await engine.createDoc<CashClose>('cash_close', s.user.id, s.storeId, { day, expected: Object.fromEntries(keys.map((k) => [k, expected[k] ?? 0])), counted: c, note: note || undefined });
-    toast(t('cash.saved'));
+    toast(t('cash.saved'), 'success');
     setCounted({});
     share(doc);
   };

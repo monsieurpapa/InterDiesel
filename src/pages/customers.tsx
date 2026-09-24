@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { ulid } from 'ulid';
-import { db, engine, go, t, toast, useLive, useSession } from '../state';
+import { db, engine, go, notifySave, t, toast, useLive, useSession } from '../state';
 import { Empty, Field, Icon, Page, Section, Seg, norm, useDebounced } from '../ui';
 import { customerBalances } from '../../shared/reports';
 import { debtReminderText } from '../../shared/messages';
@@ -94,7 +94,7 @@ export function CustomerPage(props: { id: string }) {
     await engine.createDoc<Repayment>('repayment', s.user.id, s.storeId, { customerId: c.id, method, currency, amount: n, amountUSD, rate: s.rate });
     setAmount('');
     setBusy(false);
-    toast(t('customer.repaid', { amount: currency === 'USD' ? fmtUSD(n) : fmtCDF(n) }));
+    toast(t('customer.repaid', { amount: currency === 'USD' ? fmtUSD(n) : fmtCDF(n) }), 'success');
   };
   const remind = () => sendWhatsApp({ kind: 'debt_reminder', to: c.phone, text: debtReminderText(t, c, balance, s.rate, s.store.name) });
   const all = () => setAmount(String(currency === 'USD' ? balance : roundCdf(balance * s.rate)));
@@ -187,7 +187,7 @@ export function CustomerEditPage(props: { id?: string }) {
     if (!s.can('price.edit')) delete fields.creditLimitUSD;
     const changed = existing ? Object.fromEntries(Object.entries(fields).filter(([k, v]) => JSON.stringify((existing as any)[k]) !== JSON.stringify(v))) : fields;
     if (Object.keys(changed).length) await engine.patch('customer', id, s.user.id, changed);
-    toast(t('common.saved'));
+    notifySave(fields.name as string, existing, changed);
     go(`/customer/${id}`);
   };
   return (

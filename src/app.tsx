@@ -4,8 +4,8 @@ import { checkPin } from '../shared/pin';
 import type { Customer, Product, Store, User } from '../shared/types';
 import type { SyncStatus } from './core/engine';
 import { getMeta, setMeta } from './core/db';
-import { db, engine, go, SessionContext, setToastHandler, t, useLive, useRoute, type Session, errText } from './state';
-import { Icon, Field } from './ui';
+import { db, engine, go, SessionContext, setToastHandler, t, toast as showToast, useLive, useRoute, type Session, errText } from './state';
+import { Icon, Field, Toasts, type ToastItem } from './ui';
 import { SellPage } from './pages/sell';
 import { ReceiptPage, SalesPage, VoidPage } from './pages/sales';
 import { ProductsPage, ProductPage, ProductEditPage } from './pages/products';
@@ -24,13 +24,23 @@ const IDLE_LOCK_MS = 20 * 60_000;
 export function App() {
   const [ready, setReady] = useState(false);
   const [hasDevice, setHasDevice] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; kind: 'ok' | 'error' } | null>(null);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const closeToast = (id: number) => setToasts((l) => l.filter((x) => x.id !== id));
 
   useEffect(() => {
-    setToastHandler((msg, kind = 'ok') => {
-      setToast({ msg, kind });
-      setTimeout(() => setToast(null), 1800);
+    let n = 0;
+    setToastHandler((msg, kind) => {
+      const id = ++n;
+      // newest first, at most 3; errors stay longer so they can be read
+      setToasts((l) => [{ id, msg, kind }, ...l.filter((x) => x.msg !== msg)].slice(0, 3));
+      setTimeout(() => closeToast(id), kind === 'error' ? 6000 : kind === 'warning' ? 4500 : 3200);
     });
+    // any save that fails unexpectedly still tells the user, in red
+    const onFail = (e: PromiseRejectionEvent) => {
+      const code = (e.reason as Error)?.message;
+      showToast(errText(code), 'error');
+    };
+    window.addEventListener('unhandledrejection', onFail);
     engine.init().then(() => {
       setHasDevice(!!engine.device);
       setReady(true);
@@ -49,7 +59,7 @@ export function App() {
   return (
     <>
       {hasDevice ? <Authed /> : <EnrollPage onDone={() => setHasDevice(true)} />}
-      {toast && <div class={`toast ${toast.kind === 'error' ? 'error' : ''}`} role="status">{toast.msg}</div>}
+      <Toasts items={toasts} onClose={closeToast} />
     </>
   );
 }
@@ -405,13 +415,14 @@ function SyncBadge(props: { status: SyncStatus }) {
 }
 
 function Nav() {
-  const { path } = useRoute();
-  const top = path[0] ?? '';
+  const { path, query } = useRoute();
+  // the tab lit up matches the first link of the page's breadcrumb trail
+  const top = path[0] === 'sale' && query.get('new') === '1' ? '' : path[0] ?? '';
   const items = [
-    { href: '/', match: ['', 'sale', 'sales'], label: t('nav.sell'), icon: Icon.cart },
+    { href: '/', match: [''], label: t('nav.sell'), icon: Icon.cart },
     { href: '/products', match: ['products', 'product', 'stock', 'adjust'], label: t('nav.products'), icon: Icon.box },
     { href: '/customers', match: ['customers', 'customer'], label: t('nav.customers'), icon: Icon.people },
-    { href: '/reports', match: ['reports', 'cash'], label: t('nav.reports'), icon: Icon.chart },
+    { href: '/reports', match: ['reports', 'cash', 'sales', 'sale'], label: t('nav.reports'), icon: Icon.chart },
     { href: '/menu', match: ['menu'], label: t('nav.menu'), icon: Icon.menu },
   ];
   const matched = items.find((i) => i.match.includes(top));
