@@ -29,6 +29,7 @@ export const Icon = {
   whatsapp: P('M3 21l1.6-4.8A8.5 8.5 0 1 1 7.8 19.4L3 21zM9 9.5c0 3 2.5 5.5 5.5 5.5l1.2-1.4-2-1-1 .9a4 4 0 0 1-2.2-2.2l.9-1-1-2L9 9.5z'),
   sync: P('M21 12a9 9 0 0 1-15.4 6.4L3 16M3 12a9 9 0 0 1 15.4-6.4L21 8M21 3v5h-5M3 21v-5h5'),
   lock: P('M6 11h12v10H6zM8 11V7a4 4 0 1 1 8 0v4'),
+  wrench: P('M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8z'),
   info: P('M12 16v-5M12 8h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z'),
   ok: P('M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4L12 14l-3-3'),
   alert: P('M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'),
@@ -94,6 +95,17 @@ export function Field(props: { label: string; hint?: string; children: Component
       {props.children}
       {props.hint && <small>{props.hint}</small>}
     </label>
+  );
+}
+
+/** Like Field, for controls that are not a single input (buttons, chips, photos): a label would capture their clicks. */
+export function Group(props: { label: string; hint?: string; children: ComponentChildren }) {
+  return (
+    <div class="field" role="group" aria-label={props.label}>
+      <span>{props.label}</span>
+      {props.children}
+      {props.hint && <small>{props.hint}</small>}
+    </div>
   );
 }
 

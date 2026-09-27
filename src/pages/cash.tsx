@@ -20,11 +20,13 @@ export function CashPage() {
   const voids = useLive(() => db.sale_void.where('storeId').equals(s.storeId).toArray() as Promise<SaleVoid[]>, [s.storeId], [] as SaleVoid[]);
   const reps = useLive(() => db.repayment.where('storeId').equals(s.storeId).filter((r: Repayment) => r.at >= from && r.at < from + DAY_MS).toArray(), [s.storeId, day], [] as Repayment[]);
   const reversed = useReversedIds();
+  const invoices = useLive(() => db.job_invoice.where('storeId').equals(s.storeId).filter((x: any) => x.at >= from && x.at < from + DAY_MS).toArray(), [s.storeId, day], [] as any[]);
   const allCloses = useLive(() => db.cash_close.where('storeId').equals(s.storeId).toArray().then((x: CashClose[]) => x.sort((a, b) => b.at - a.at)), [s.storeId], [] as CashClose[]);
   const closes = allCloses.filter((c) => !reversed.has(c.id));
   const [counted, setCounted] = useState<Record<string, string>>({});
   const [note, setNote] = useState('');
-  const expected = expectedDrawer(day, s.storeId, sales, voids, reps.filter((r) => !reversed.has(r.id)));
+  const cashSales = [...sales, ...(invoices.filter((x) => !reversed.has(x.id)) as unknown as Sale[])];
+  const expected = expectedDrawer(day, s.storeId, cashSales, voids, reps.filter((r) => !reversed.has(r.id)));
   const keys = KEYS.filter((k) => k.startsWith('cash:') || (expected[k] ?? 0) !== 0);
   const done = closes.find((c) => c.day === day);
   if (!s.can('cash.close')) return <Page title={t('cash.title')} back><Empty>{t('error.forbidden')}</Empty></Page>;

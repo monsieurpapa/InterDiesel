@@ -12,7 +12,8 @@ import { dailySummaryText, debtReminderText, lowStockText } from '../../shared/m
 import { stockId } from '../../shared/derive';
 import { dayKey, DAY_MS, TZ_OFFSET_MS } from '../../shared/time';
 import { fmtUSD } from '../../shared/money';
-import type { Customer, LedgerEntry, MinStock, Product, RateDoc, Store, User } from '../../shared/types';
+import type { Customer, LedgerEntry, MinStock, Product, RateDoc, Store, User, Vehicle } from '../../shared/types';
+import { reminderText, serviceDue } from '../../shared/garage';
 import { LogChannel, WhatsAppCloudChannel } from './whatsapp-cloud';
 
 const t = createT(LOCALES[process.env.LANG_APP ?? DEFAULT_LANG] ?? LOCALES.fr);
@@ -28,9 +29,10 @@ export function buildMessages(db: DB, now: number, which: 'evening' | 'monday'):
     const day = dayKey(now);
     const since = now - 2 * DAY_MS;
     const recent = (k: string) => listKind(db, k).filter((d: any) => d.at >= since);
-    const sales = recent('sale');
-    const voids = recent('sale_void');
     const cancelled = new Set(listKind(db, 'reversal').map((r: any) => r.refId));
+    // garage invoices are the garage's sales
+    const sales = [...recent('sale'), ...recent('job_invoice').filter((x: any) => !cancelled.has(x.id))];
+    const voids = recent('sale_void');
     const reps = recent('repayment').filter((r: any) => !cancelled.has(r.id));
     const products = new Map((listKind(db, 'product') as Product[]).map((p) => [p.id, p]));
     const stock = new Map(listKind(db, 'stock').map((s: any) => [s.id, s.qty as number]));
@@ -61,6 +63,18 @@ export function buildMessages(db: DB, now: number, which: 'evening' | 'monday'):
         text: debtReminderText(t, c, b.balanceUSD, rate, 'Inter-Diesel'),
         template: { name: 'rappel_dette', language: 'fr', params: [c.name, fmtUSD(b.balanceUSD)] },
       });
+    }
+    // garage: service reminders for vehicles due within a week (once: the next Monday run
+    // only sends again if the date is still ahead, so customers get at most 2 reminders)
+    const garage = stores.find((s) => s.kind === 'garage');
+    if (garage) {
+      for (const v of listKind(db, 'vehicle') as Vehicle[]) {
+        if (v.active === false || serviceDue(v, now, 7, 300) === null) continue;
+        if (v.nextServiceAt && v.nextServiceAt < now - 14 * DAY_MS) continue; // long overdue: the garage calls instead
+        const c = v.customerId ? customers.get(v.customerId) : undefined;
+        if (!c?.phone) continue;
+        msgs.push({ kind: 'garage', to: c.phone, text: reminderText(t, { vehicle: v, customer: c, store: garage }), template: { name: 'rappel_entretien', language: 'fr', params: [c.name, v.plate] } });
+      }
     }
   }
   return msgs;

@@ -81,6 +81,16 @@ function useDocs(storeId: string | null, from: number, to: number) {
     [storeId, from, to],
     [] as Sale[],
   );
+  // garage invoices count as sales of the garage (parts at their cost, labour with no cost)
+  const invoices = useLive(
+    async () => {
+      const rev = new Set((await db.reversal.toArray()).map((r: any) => r.refId));
+      const list = (await db.job_invoice.where('at').between(from, to).toArray()) as any[];
+      return list.filter((x) => (!storeId || x.storeId === storeId) && !rev.has(x.id)) as unknown as Sale[];
+    },
+    [storeId, from, to],
+    [] as Sale[],
+  );
   const voids = useLive(() => db.sale_void.toArray() as Promise<SaleVoid[]>, [], [] as SaleVoid[]);
   const reps = useLive(
     async () => {
@@ -91,7 +101,7 @@ function useDocs(storeId: string | null, from: number, to: number) {
     [storeId, from, to],
     [] as Repayment[],
   );
-  return { sales, voids, reps };
+  return { sales: useMemo(() => [...sales, ...invoices], [sales, invoices]), voids, reps };
 }
 
 function SalesReport(props: { storeId: string | null; from: number; to: number; period: Period }) {

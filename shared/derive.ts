@@ -8,6 +8,8 @@ import type {
   Adjustment,
   Count,
   DocKind,
+  Issue,
+  JobInvoice,
   LedgerEntry,
   Movement,
   Purchase,
@@ -85,6 +87,21 @@ export function derive(kind: DocKind, d: any): Derived {
       t.lines.forEach((l, i) => mv(i, t.storeId, l.productId, l.qty, 'transfer_in'));
       break;
     }
+    case 'issue': {
+      // bon de sortie: parts leave the store for a garage job (or come back unused)
+      const x = d as Issue;
+      x.lines.forEach((l, i) => mv(i, x.storeId, l.productId, x.returned ? l.qty : -l.qty, x.returned ? 'issue_return' : 'issue'));
+      break;
+    }
+    case 'job_invoice': {
+      // parts already left stock on their bons de sortie: an invoice only creates debt
+      const inv = d as JobInvoice;
+      const credit = creditOf(inv);
+      if (credit > 0 && inv.customerId) {
+        ledger.push({ id: `${inv.id}:l`, customerId: inv.customerId, storeId: inv.storeId, amountUSD: credit, kind: 'job_credit', ref: inv.id, at: inv.at });
+      }
+      break;
+    }
     case 'reversal': {
       const r = d as Reversal;
       r.movements.forEach((m, i) => mv(i, m.storeId, m.productId, m.qty, 'reversal'));
@@ -123,6 +140,8 @@ export function docStore(kind: DocKind, d: any): string {
 export function docScope(kind: DocKind, d: any): string | null {
   if (kind === 'transfer_request' || kind === 'transfer_send' || kind === 'transfer_receive' || kind === 'rate') return null;
   if (kind === 'reversal' && String(d.refKind).startsWith('transfer_')) return null;
+  // a shop's bon de sortie must reach the garage that asked for the parts
+  if (kind === 'issue' || (kind === 'reversal' && d.refKind === 'issue')) return null;
   return d.storeId;
 }
 

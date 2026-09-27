@@ -1,5 +1,6 @@
 import { db, engine, t, useLive, useSession } from '../state';
 import { Page } from '../ui';
+import { usePendingIssues } from './garage';
 import type { Action } from '../../shared/permissions';
 
 export function MenuPage() {
@@ -18,6 +19,9 @@ export function MenuPage() {
     [s.storeId],
     0,
   );
+  const pendingIssues = usePendingIssues(s.storeId).reduce((a, x) => a + x.missing.length, 0);
+  const hasGarage = s.stores.some((x) => x.kind === 'garage');
+  const isGarage = s.store.kind === 'garage';
   const groups: { title: string; items: { href: string; label: string; hint?: string; badge?: number; need?: Action }[] }[] = [
     {
       title: t('menu.stock'),
@@ -55,6 +59,23 @@ export function MenuPage() {
       ],
     },
   ];
+  if (hasGarage) {
+    groups.unshift({
+      title: t('menu.garage'),
+      items: [
+        ...(isGarage || s.allStores ? [{ href: '/garage', label: t('menu.garageBoard'), hint: t('menu.garageHint'), need: 'job.work' as Action }] : []),
+        { href: '/issues', label: t('garage.issues'), hint: t('garage.issuesHint'), badge: pendingIssues, need: 'issue.create' as Action },
+        ...(isGarage || s.allStores
+          ? [
+              { href: '/vehicles', label: t('garage.vehicles'), need: 'job.work' as Action },
+              { href: '/reminders', label: t('garage.reminders'), need: 'job.work' as Action },
+              { href: '/services', label: t('garage.services'), need: 'job.work' as Action },
+            ]
+          : []),
+        ...(isGarage ? [{ href: '/sell', label: t('garage.counter'), need: 'sell' as Action }] : []),
+      ],
+    });
+  }
   return (
     <Page title={t('menu.title')}>
       {groups.map((g) => {

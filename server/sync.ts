@@ -157,7 +157,7 @@ function applyDoc(db: DB, device: Device, user: User, kind: DocKind, raw: any, o
   // A phone clock far ahead must not put the document in the future.
   if (d.at > Date.now() + 10 * 60_000) d.at = Date.now();
   // Every product referenced must exist.
-  const pids: string[] = d.productId ? [d.productId] : (d.lines ?? []).map((l: any) => l.productId);
+  const pids: string[] = d.productId ? [d.productId] : (d.lines ?? []).map((l: any) => l.productId).filter(Boolean);
   for (const pid of pids) if (!getRecord(db, 'product', pid)) throw new Rejected('unknown_product');
 
   // Kind-specific integrity rules. The server trusts its own copy of referenced docs.
@@ -213,6 +213,33 @@ function applyDoc(db: DB, device: Device, user: User, kind: DocKind, raw: any, o
     case 'sale':
       if (d.customerId && !getRecord(db, 'customer', d.customerId)) throw new Rejected('unknown_customer');
       break;
+    case 'issue': {
+      const job = getRecord(db, 'job', d.jobId)?.data;
+      if (!job) throw new Rejected('unknown_job');
+      const store = getRecord(db, 'store', d.storeId)?.data;
+      // a garage hands out only its own shelf, for its own jobs
+      if (store?.kind === 'garage' && job.storeId !== d.storeId) throw new Rejected('wrong_store_for_job');
+      if (d.returned) {
+        // parts can only come back to the store they left, up to what left
+        const net = issuedForJob(db, d.jobId, d.storeId);
+        for (const l of d.lines) if ((net.get(l.productId) ?? 0) < l.qty) throw new Rejected('return_more_than_issued');
+      }
+      break;
+    }
+    case 'job_invoice': {
+      const job = getRecord(db, 'job', d.jobId)?.data;
+      if (!job) throw new Rejected('unknown_job');
+      if (job.storeId !== d.storeId) throw new Rejected('wrong_store_for_job');
+      if (d.customerId && !getRecord(db, 'customer', d.customerId)) throw new Rejected('unknown_customer');
+      const customer = d.customerId ? getRecord(db, 'customer', d.customerId)?.data : null;
+      if (customer?.poRequired && !String(d.poNumber ?? '').trim()) throw new Rejected('po_required');
+      const open = db
+        .prepare("SELECT id FROM records WHERE kind = 'job_invoice' AND json_extract(data, '$.jobId') = ?")
+        .all(d.jobId)
+        .some((r: any) => !getRecord(db, 'reversal', reversalIdFor(r.id)));
+      if (open) throw new Rejected('job_already_invoiced');
+      break;
+    }
   }
 
   // Sales made by a user who was deactivated while the device was offline are kept
@@ -242,8 +269,25 @@ function applyDoc(db: DB, device: Device, user: User, kind: DocKind, raw: any, o
   return 'ok';
 }
 
+/** Net quantity of each product a store handed out for a job (issued - returned, reversals excluded). */
+export function issuedForJob(db: DB, jobId: string, storeId?: string): Map<string, number> {
+  const rows = db.prepare("SELECT data FROM records WHERE kind = 'issue' AND json_extract(data, '$.jobId') = ?").all(jobId) as any[];
+  const net = new Map<string, number>();
+  for (const r of rows) {
+    const x = JSON.parse(r.data);
+    if (storeId && x.storeId !== storeId) continue;
+    if (getRecord(db, 'reversal', reversalIdFor(x.id))) continue;
+    for (const l of x.lines) net.set(l.productId, (net.get(l.productId) ?? 0) + (x.returned ? -l.qty : l.qty));
+  }
+  return net;
+}
+
 function docSummary(kind: DocKind, d: any): string {
   switch (kind) {
+    case 'issue':
+      return `${d.no} · ${d.jobNo}${d.returned ? ' · retour' : ''}`;
+    case 'job_invoice':
+      return `${d.no} · ${d.jobNo} · ${fmtUSD(d.totalUSD)}`;
     case 'sale':
       return `${d.no} · ${fmtUSD(d.totalUSD)}`;
     case 'sale_void':
@@ -276,7 +320,18 @@ function applyEntityPatch(db: DB, device: Device, user: User, kind: EntityKind, 
   // Permissions. A user may change their own PIN; everything else follows the matrix.
   // (not the owner's PIN from a store device: there the owner only acts as that store's manager)
   const ownPin = kind === 'user' && id === user.id && existing?.data.role === user.role && Object.keys(fields).every((k) => k === 'pinHash');
-  if (!ownPin && !can(user.role, patchAction(kind, fields))) throw new Rejected('forbidden');
+  // job photos are taken by whoever registers or works on the job
+  const action = kind === 'photo' && id.startsWith('job_') ? 'job.work' : patchAction(kind, fields);
+  if (!ownPin && !can(user.role, action)) throw new Rejected('forbidden');
+  if (kind === 'job') {
+    const storeId = (existing?.data.storeId ?? fields.storeId) as string;
+    if (existing && 'storeId' in fields && fields.storeId !== existing.data.storeId) throw new Rejected('job_store_fixed');
+    if (getRecord(db, 'store', storeId)?.data.kind !== 'garage') throw new Rejected('not_a_garage');
+    if (user.role !== 'owner' && user.storeId !== storeId) throw new Rejected('wrong_store_for_user');
+    if (!existing && (!fields.vehicleId || !fields.no || !fields.status)) throw new Rejected('job_incomplete');
+    if (fields.vehicleId && !getRecord(db, 'vehicle', fields.vehicleId as string)) throw new Rejected('unknown_vehicle');
+  }
+  if (kind === 'vehicle' && !existing && !fields.plate) throw new Rejected('plate_required');
   if (kind === 'user' && 'role' in fields && fields.role === 'owner' && user.role !== 'owner') throw new Rejected('forbidden');
   if (kind === 'user' && 'username' in fields) throw new Rejected('username_via_api_only');
   if (kind === 'minstock') {
@@ -288,7 +343,7 @@ function applyEntityPatch(db: DB, device: Device, user: User, kind: EntityKind, 
     if (!existing) throw new Rejected('unknown_alert');
     if (user.role !== 'owner' && existing.data.storeId && existing.data.storeId !== user.storeId) throw new Rejected('wrong_store_for_user');
   }
-  if (!existing && (kind === 'product' || kind === 'customer' || kind === 'supplier') && !fields.name) throw new Rejected('name_required');
+  if (!existing && (kind === 'product' || kind === 'customer' || kind === 'supplier' || kind === 'service') && !fields.name) throw new Rejected('name_required');
 
   const base = existing?.data ?? { id };
   const merged = applyPatch(base, existing?.clocks ?? {}, fields, hlc);
@@ -307,7 +362,7 @@ function applyEntityPatch(db: DB, device: Device, user: User, kind: EntityKind, 
       kind: `${kind}.${existing ? 'edit' : 'create'}`,
       refId: id,
       at: Date.now(),
-      summary: String(merged.data.name ?? merged.data.ref ?? id),
+      summary: String(merged.data.name ?? merged.data.plate ?? merged.data.no ?? merged.data.ref ?? id),
       changes,
     });
   }

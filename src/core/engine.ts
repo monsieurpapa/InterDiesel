@@ -140,6 +140,16 @@ export class Engine {
     });
   }
 
+  /** Next number of a series on this device, e.g. OR (repair jobs), BS (bons de sortie), FG (garage invoices). */
+  async nextNo(series: string, storeCode: string): Promise<string> {
+    return this.db.transaction('rw', this.db.meta, async () => {
+      const key = `counter:${series}`;
+      const n = (await getMeta<number>(this.db, key, 0)) + 1;
+      await setMeta(this.db, key, n);
+      return `${storeCode}-${series}-${this.device?.deviceCode ?? 'XX'}${String(n).padStart(3, '0')}`;
+    });
+  }
+
   /** Change fields of a mutable record (product, customer...). */
   async patch(kind: EntityKind, id: string, userId: string, fields: Record<string, unknown>) {
     const hlc = await this.tick();

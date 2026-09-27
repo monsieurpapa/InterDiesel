@@ -78,6 +78,9 @@ export function CustomerPage(props: { id: string }) {
   const ledger = useLive(() => db.ledger.where('customerId').equals(props.id).toArray() as Promise<LedgerEntry[]>, [props.id], [] as LedgerEntry[]);
   const bal = useMemo(() => customerBalances(ledger, engine.now()).get(props.id), [ledger]);
   const reversed = useReversedIds();
+  const vehicles = useLive(() => db.vehicle.where('customerId').equals(props.id).toArray(), [props.id], [] as any[]);
+  const invoices = useLive(() => db.job_invoice.where('customerId').equals(props.id).toArray(), [props.id], [] as any[]);
+  const invById = new Map(invoices.map((i: any) => [i.id, i]));
   const [method, setMethod] = useState<Repayment['method']>('cash');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [amount, setAmount] = useState('');
@@ -97,6 +100,17 @@ export function CustomerPage(props: { id: string }) {
     toast(t('customer.repaid', { amount: currency === 'USD' ? fmtUSD(n) : fmtCDF(n) }), 'success');
   };
   const remind = () => sendWhatsApp({ kind: 'debt_reminder', to: c.phone, text: debtReminderText(t, c, balance, s.rate, s.store.name) });
+  const statement = () => {
+    const rows = [...ledger]
+      .filter((e) => !reversed.has(e.ref))
+      .sort((a, b) => a.at - b.at)
+      .slice(-25)
+      .map((e) => {
+        const inv = invById.get(e.ref) as any;
+        return `${fmtDate(e.at)} · ${t(`ledger.${e.kind}`)}${inv ? ` ${inv.no}${inv.poNumber ? ` (PO ${inv.poNumber})` : ''}` : ''} : ${e.amountUSD > 0 ? '+' : ''}${fmtUSD(e.amountUSD)}`;
+      });
+    sendWhatsApp({ kind: 'debt_reminder', to: c.phone, text: t('customer.statementText', { name: c.name, store: s.store.name, date: fmtDate(engine.now()), amount: fmtUSD(balance), lines: rows.join('\n'), phone: s.store.phone ?? '' }) });
+  };
   const all = () => setAmount(String(currency === 'USD' ? balance : roundCdf(balance * s.rate)));
 
   return (
@@ -112,6 +126,21 @@ export function CustomerPage(props: { id: string }) {
           <a class="btn" href={`tel:${c.phone}`}><Icon.phone />{t('customer.call')}</a>
           <button class="btn wa" onClick={remind} disabled={balance <= 0.004}><Icon.whatsapp />{t('customer.remind')}</button>
         </div>
+      )}
+      {c.type && c.type !== 'person' && ledger.length > 0 && (
+        <button class="btn block" style={{ marginTop: 8 }} onClick={statement}><Icon.whatsapp />{t('customer.statement')}</button>
+      )}
+      {vehicles.length > 0 && (
+        <>
+          <Section title={t('customer.vehicles')} />
+          <div class="list">
+            {vehicles.map((v: any) => (
+              <a class="item" href={`#/vehicle/${v.id}`}>
+                <div class="main"><div class="title">{v.plate}</div><div class="sub">{[v.make, v.model].filter(Boolean).join(' ')}</div></div>
+              </a>
+            ))}
+          </div>
+        </>
       )}
       {bal && balance > 0.004 && (
         <>
@@ -151,12 +180,13 @@ export function CustomerPage(props: { id: string }) {
       <div class="list">
         {[...ledger].sort((a, b) => b.at - a.at).map((e) => {
           const canCancel = e.kind === 'repayment' && s.can('doc.reverse') && !reversed.has(e.ref);
-          const href = e.kind === 'credit_sale' ? `#/sale/${e.ref}` : canCancel ? `#/reverse/repayment/${e.ref}` : undefined;
+          const inv = invById.get(e.ref) as any;
+          const href = e.kind === 'credit_sale' ? `#/sale/${e.ref}` : e.kind === 'job_credit' && inv ? `#/job/${inv.jobId}?tab=money` : canCancel ? `#/reverse/repayment/${e.ref}` : undefined;
           return (
           <a class="item" href={href} style={{ cursor: href ? 'pointer' : 'default' }}>
             <div class="main">
               <div class="title">
-                {t(`ledger.${e.kind}`)}
+                {t(`ledger.${e.kind}`)}{inv ? ` ${inv.no}` : ''}
                 {(e as any).pending ? <span class="tag warn" style={{ marginLeft: 6 }}>{t('sync.notSent')}</span> : null}
                 {e.kind === 'repayment' && reversed.has(e.ref) ? <span class="tag" style={{ marginLeft: 6 }}>{t('reverse.tag')}</span> : null}
               </div>
@@ -203,6 +233,17 @@ export function CustomerEditPage(props: { id?: string }) {
           <Field label={t('customer.creditLimit')} hint={t('customer.creditLimitHint')}>
             <input inputMode="decimal" value={f.creditLimitUSD ?? ''} onInput={(e) => set({ creditLimitUSD: e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value) || 0) })} />
           </Field>
+        )}
+        <Field label={t('customer.type')}>
+          <select value={f.type ?? 'person'} onChange={(e) => set({ type: e.currentTarget.value as Customer['type'] })}>
+            {(['person', 'company', 'ngo'] as const).map((k) => <option value={k}>{t(`customer.type.${k}`)}</option>)}
+          </select>
+        </Field>
+        {f.type && f.type !== 'person' && (
+          <label class="check">
+            <input type="checkbox" checked={!!f.poRequired} onChange={(e) => set({ poRequired: e.currentTarget.checked })} />
+            {t('customer.poRequired')}
+          </label>
         )}
         <Field label={t('customer.note')}>
           <textarea value={f.note} onInput={(e) => set({ note: e.currentTarget.value })} />

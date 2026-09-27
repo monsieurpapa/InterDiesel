@@ -2,7 +2,7 @@
 // Money is always stored in USD (number, 2 decimals) with the exchange rate
 // snapshot kept on each document, so CDF amounts can be recomputed exactly.
 
-export type Role = 'owner' | 'manager' | 'seller';
+export type Role = 'owner' | 'manager' | 'seller' | 'mechanic';
 export type Currency = 'USD' | 'CDF';
 export type PayMethod = 'cash' | 'mpesa' | 'airtel' | 'orange' | 'credit';
 
@@ -16,6 +16,10 @@ export const ENTITY_KINDS = [
   'minstock',
   'photo',
   'alert',
+  // garage
+  'vehicle',
+  'service',
+  'job',
 ] as const;
 export type EntityKind = (typeof ENTITY_KINDS)[number];
 
@@ -33,6 +37,9 @@ export const DOC_KINDS = [
   'cash_close',
   'rate',
   'reversal',
+  // garage
+  'issue',
+  'job_invoice',
 ] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
 
@@ -57,6 +64,8 @@ export interface Store {
   code: string; // short code used in receipt numbers, e.g. "IBA"
   address?: string;
   phone?: string; // WhatsApp number of the store, international format
+  /** 'garage' = the workshop: it has its own small parts shelf and repair jobs. */
+  kind?: 'shop' | 'garage';
   active: boolean;
 }
 
@@ -98,6 +107,10 @@ export interface Customer {
   phone?: string;
   note?: string;
   creditLimitUSD?: number | null;
+  /** person, company or NGO: companies and NGOs usually own several vehicles and pay monthly. */
+  type?: 'person' | 'company' | 'ngo';
+  /** The customer requires its purchase-order number on every garage job and invoice. */
+  poRequired?: boolean;
   active: boolean;
 }
 
@@ -108,6 +121,94 @@ export interface Supplier {
   city?: string;
   note?: string;
   active: boolean;
+}
+
+// ---------- Garage ----------
+
+export interface Vehicle {
+  id: string;
+  plate: string; // registration, the way people look a vehicle up
+  make: string; // Toyota
+  model: string; // Land Cruiser 79
+  year?: string;
+  vin?: string;
+  color?: string;
+  customerId: string | null; // owner / fleet
+  km?: number; // last odometer reading seen
+  nextServiceKm?: number | null;
+  nextServiceAt?: number | null;
+  note?: string;
+  active: boolean;
+}
+
+/** A standard piece of work with its labour price (vidange, plaquettes, diagnostic...). */
+export interface Service {
+  id: string;
+  name: string;
+  category: string;
+  priceUSD: number;
+  active: boolean;
+}
+
+export const JOB_STATUSES = ['arrived', 'diagnosis', 'quote', 'approved', 'in_progress', 'waiting_parts', 'ready', 'delivered', 'cancelled'] as const;
+export type JobStatus = (typeof JOB_STATUSES)[number];
+export type CheckState = 'ok' | 'watch' | 'fix' | 'na';
+
+export interface LabourLine {
+  serviceId: string | null;
+  name: string;
+  qty: number;
+  unitUSD: number;
+}
+
+/** Parts the job needs; shops (or the garage shelf) hand them out on a bon de sortie. */
+export interface NeedLine {
+  productId: string;
+  qty: number;
+  fromStoreId: string;
+}
+
+/**
+ * A repair job (ordre de réparation). Mutable: mechanics, reception and the garage
+ * chief fill it in over several days. Each checklist item is its own field
+ * (`ck_<item>`), so two mechanics ticking different items never overwrite each other.
+ */
+export interface Job {
+  id: string;
+  no: string;
+  storeId: string; // the garage
+  vehicleId: string;
+  customerId: string | null;
+  status: JobStatus;
+  arrivedAt: number;
+  km?: number;
+  fuel?: number; // eighths of a tank, 0-8
+  keyTag?: string;
+  complaint: string; // what the customer says
+  arrivalItems?: string[]; // things left in the vehicle: spare wheel, jack, radio...
+  damage?: string; // visible damage on arrival
+  photoIds?: string[]; // photo records `job_<id>_<n>`
+  contactName?: string;
+  contactPhone?: string;
+  mechanicIds?: string[];
+  diagnosis?: string;
+  labour?: LabourLine[];
+  needs?: NeedLine[];
+  poNumber?: string;
+  promisedAt?: number | null;
+  quoteSentAt?: number | null;
+  approvedTotalUSD?: number | null; // estimate total the customer agreed to
+  approvedAt?: number | null;
+  approvedBy?: string;
+  approvedVia?: 'in_person' | 'phone' | 'whatsapp' | 'purchase_order';
+  invoiceId?: string | null;
+  deliveredAt?: number | null;
+  deliveredTo?: string;
+  exitKm?: number;
+  signature?: string; // PNG data URL drawn on the phone
+  nextServiceKm?: number | null;
+  nextServiceAt?: number | null;
+  [check: `ck_${string}`]: { s: CheckState; note?: string } | undefined;
 }
 
 export interface MinStock {
@@ -269,8 +370,50 @@ export interface RateDoc extends DocBase {
   cdfPerUsd: number;
 }
 
+/**
+ * Bon de sortie: parts handed out of a store's stock for a garage job (storeId = the
+ * store the parts leave). `returned` = unused parts brought back to the store.
+ */
+export interface Issue extends DocBase {
+  no: string;
+  jobId: string;
+  jobNo: string;
+  lines: { productId: string; name: string; qty: number; unitUSD: number; costUSD: number }[];
+  returned?: boolean;
+  takenBy: string; // name of the person who carried the parts to the workshop
+  note?: string;
+}
+
+export interface JobInvoiceLine {
+  kind: 'part' | 'labour';
+  productId?: string | null;
+  serviceId?: string | null;
+  name: string;
+  ref: string;
+  qty: number;
+  unitUSD: number;
+  costUSD: number;
+}
+
+/** The garage invoice of a job. Paid now, on credit (debt), or a mix, like a sale. */
+export interface JobInvoice extends DocBase {
+  no: string;
+  jobId: string;
+  jobNo: string;
+  vehicleId: string;
+  customerId?: string | null;
+  poNumber?: string;
+  rate: number;
+  lines: JobInvoiceLine[];
+  discountUSD: number;
+  totalUSD: number;
+  payments: Payment[];
+  changeUSD: number;
+  note?: string;
+}
+
 /** Kinds of documents the owner can cancel with a reversal (sales use sale_void). */
-export const REVERSIBLE_KINDS = ['purchase', 'adjustment', 'count', 'transfer_send', 'transfer_receive', 'transfer_request', 'repayment', 'cash_close'] as const;
+export const REVERSIBLE_KINDS = ['purchase', 'adjustment', 'count', 'transfer_send', 'transfer_receive', 'transfer_request', 'repayment', 'cash_close', 'issue', 'job_invoice'] as const;
 export type ReversibleKind = (typeof REVERSIBLE_KINDS)[number];
 
 /**
@@ -296,7 +439,9 @@ export type MovementKind =
   | 'count'
   | 'transfer_out'
   | 'transfer_in'
-  | 'reversal';
+  | 'reversal'
+  | 'issue'
+  | 'issue_return';
 
 export interface Movement {
   id: string;
@@ -316,7 +461,7 @@ export interface StockLevel {
   qty: number;
 }
 
-export type LedgerKind = 'credit_sale' | 'repayment' | 'void' | 'reversal';
+export type LedgerKind = 'credit_sale' | 'repayment' | 'void' | 'reversal' | 'job_credit';
 
 export interface LedgerEntry {
   id: string;

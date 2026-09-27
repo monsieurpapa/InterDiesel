@@ -3,7 +3,7 @@
 // the WhatsApp Business Cloud API channel for automatic messages, without the
 // rest of the code changing. See WHATSAPP.md.
 
-export type MessageKind = 'receipt' | 'daily_summary' | 'low_stock' | 'transfer_request' | 'transfer_sent' | 'debt_reminder';
+export type MessageKind = 'receipt' | 'daily_summary' | 'low_stock' | 'transfer_request' | 'transfer_sent' | 'debt_reminder' | 'garage';
 
 export interface OutgoingMessage {
   kind: MessageKind;

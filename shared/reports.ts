@@ -125,6 +125,7 @@ export function productStats(sales: Sale[], storeId: string | null, from: number
     if (s.at < from || s.at >= to) continue;
     const share = s.totalUSD / Math.max(0.01, s.totalUSD + s.discountUSD); // spread the sale discount over lines
     for (const l of s.lines) {
+      if (!l.productId) continue; // garage labour lines are not products
       const st = m.get(l.productId) ?? { productId: l.productId, qty: 0, revenueUSD: 0, costUSD: 0, lastSoldAt: 0 };
       st.qty += l.qty;
       st.revenueUSD = round2(st.revenueUSD + l.qty * l.unitUSD * share);

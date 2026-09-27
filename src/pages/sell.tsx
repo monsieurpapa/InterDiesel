@@ -465,7 +465,7 @@ interface PayRow {
   amount: string;
 }
 
-function MixedSheet(props: { total: number; customer: Customer | null; onClose: () => void; onBack: () => void; onPickCustomer: () => void; onConfirm: (p: Payment[]) => void }) {
+export function MixedSheet(props: { total: number; customer: Customer | null; onClose: () => void; onBack: () => void; onPickCustomer: () => void; onConfirm: (p: Payment[]) => void; confirmLabel?: string }) {
   const s = useSession();
   const [rows, setRows] = useState<PayRow[]>([{ method: 'cash', currency: 'USD', amount: '' }]);
   const payments: Payment[] = rows
@@ -558,7 +558,7 @@ function MixedSheet(props: { total: number; customer: Customer | null; onClose: 
         <div class="row">
           <button class="btn" onClick={props.onBack}>{t('common.back')}</button>
           <button class="btn primary grow" disabled={left > 0.004 || (hasCredit && !props.customer)} onClick={() => props.onConfirm(payments)}>
-            {t('pay.confirm')}
+            {props.confirmLabel ?? t('pay.confirm')}
           </button>
         </div>
       </div>
@@ -566,7 +566,7 @@ function MixedSheet(props: { total: number; customer: Customer | null; onClose: 
   );
 }
 
-function CustomerSheet(props: { onClose: () => void; onPick: (c: Customer) => void }) {
+export function CustomerSheet(props: { onClose: () => void; onPick: (c: Customer) => void }) {
   const s = useSession();
   const [q, setQ] = useState('');
   const [creating, setCreating] = useState(false);

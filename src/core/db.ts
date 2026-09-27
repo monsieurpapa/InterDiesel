@@ -39,6 +39,11 @@ export class LocalDB extends Dexie {
   cash_close!: Table<any, string>;
   rate!: Table<any, string>;
   reversal!: Table<any, string>;
+  vehicle!: Table<any, string>;
+  service!: Table<any, string>;
+  job!: Table<any, string>;
+  issue!: Table<any, string>;
+  job_invoice!: Table<any, string>;
   movement!: Table<any, string>;
   stock!: Table<any, string>;
   ledger!: Table<any, string>;
@@ -77,6 +82,14 @@ export class LocalDB extends Dexie {
     });
     // v2: owner can cancel documents (reversals)
     this.version(2).stores({ reversal: 'id, at, storeId, refId, refKind' });
+    // v3: garage (vehicles, services, repair jobs, bons de sortie, garage invoices)
+    this.version(3).stores({
+      vehicle: 'id, plate, customerId',
+      service: 'id',
+      job: 'id, storeId, status, vehicleId, customerId, arrivedAt',
+      issue: 'id, at, storeId, jobId',
+      job_invoice: 'id, at, storeId, jobId, customerId',
+    });
   }
 }
 

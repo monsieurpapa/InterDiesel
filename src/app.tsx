@@ -4,7 +4,7 @@ import { checkPin } from '../shared/pin';
 import type { Customer, Product, Store, User } from '../shared/types';
 import type { SyncStatus } from './core/engine';
 import { getMeta, setMeta } from './core/db';
-import { db, engine, go, SessionContext, setToastHandler, t, toast as showToast, useLive, useRoute, type Session, errText } from './state';
+import { db, engine, go, SessionContext, useSession, setToastHandler, t, toast as showToast, useLive, useRoute, type Session, errText } from './state';
 import { Icon, Field, Toasts, type ToastItem } from './ui';
 import { SellPage } from './pages/sell';
 import { ReceiptPage, SalesPage, VoidPage } from './pages/sales';
@@ -17,6 +17,7 @@ import { TransfersPage, TransferNewPage, TransferPage, RequestNewPage } from './
 import { PurchasesPage, PurchaseNewPage, PurchasePage, SuppliersPage, SupplierEditPage } from './pages/purchases';
 import { CountsPage, CountNewPage, CountPage } from './pages/counts';
 import { CashPage } from './pages/cash';
+import { GaragePage, JobNewPage, JobPage, VehiclesPage, VehiclePage, RemindersPage, ServicesPage, IssuesPage, IssueNewPage, IssuePage } from './pages/garage';
 import { AlertsPage, AuditPage, RatePage, SyncPage, DevicePage, UsersPage, UserEditPage, StoresPage, StoreEditPage, ReversePage } from './pages/admin';
 
 const IDLE_LOCK_MS = 20 * 60_000;
@@ -415,20 +416,26 @@ function SyncBadge(props: { status: SyncStatus }) {
 }
 
 function Nav() {
+  const s = useSession();
   const { path, query } = useRoute();
+  const isGarage = s.store.kind === 'garage';
   // the tab lit up matches the first link of the page's breadcrumb trail
   const top = path[0] === 'sale' && query.get('new') === '1' ? '' : path[0] ?? '';
   const items = [
-    { href: '/', match: [''], label: t('nav.sell'), icon: Icon.cart },
+    isGarage
+      ? { href: '/', match: ['', 'garage', 'job', 'vehicles', 'vehicle', 'reminders', 'services'], label: t('nav.garage'), icon: Icon.wrench }
+      : { href: '/', match: ['', 'sell'], label: t('nav.sell'), icon: Icon.cart },
     { href: '/products', match: ['products', 'product', 'stock', 'adjust'], label: t('nav.products'), icon: Icon.box },
     { href: '/customers', match: ['customers', 'customer'], label: t('nav.customers'), icon: Icon.people },
     { href: '/reports', match: ['reports', 'cash', 'sales', 'sale'], label: t('nav.reports'), icon: Icon.chart },
     { href: '/menu', match: ['menu'], label: t('nav.menu'), icon: Icon.menu },
   ];
-  const matched = items.find((i) => i.match.includes(top));
+  // mechanics neither sell nor see sales reports
+  const shown = items.filter((i) => i.href !== '/reports' || s.can('sell') || s.can('report.view'));
+  const matched = shown.find((i) => i.match.includes(top));
   return (
-    <nav class="nav" aria-label={t('nav.label')}>
-      {items.map((i) => {
+    <nav class="nav" aria-label={t('nav.label')} style={{ gridTemplateColumns: `repeat(${shown.length}, 1fr)` }}>
+      {shown.map((i) => {
         const on = matched ? i === matched : i.href === '/menu';
         return (
           <a href={`#${i.href}`} class={on ? 'on' : ''} aria-current={on ? 'page' : undefined}>
@@ -442,12 +449,31 @@ function Nav() {
 }
 
 function Router() {
+  const s = useSession();
   const { path, query } = useRoute();
   const [a, b, c] = path;
   switch (a) {
     case undefined:
     case '':
+      return s.store.kind === 'garage' ? <GaragePage /> : <SellPage />;
+    case 'sell':
       return <SellPage />;
+    case 'garage':
+      return <GaragePage />;
+    case 'job':
+      return b === 'new' ? <JobNewPage /> : <JobPage key={`${b}:${query.get('tab') ?? ''}`} id={b} tab={query.get('tab')} />;
+    case 'vehicles':
+      return <VehiclesPage />;
+    case 'vehicle':
+      return <VehiclePage id={b} />;
+    case 'reminders':
+      return <RemindersPage />;
+    case 'services':
+      return <ServicesPage />;
+    case 'issues':
+      return <IssuesPage />;
+    case 'issue':
+      return b === 'new' ? <IssueNewPage jobId={query.get('job')} returning={query.get('return') === '1'} /> : <IssuePage id={b} />;
     case 'sale':
       return c === 'void' ? <VoidPage id={b} /> : <ReceiptPage id={b} fresh={query.get('new') === '1'} />;
     case 'sales':

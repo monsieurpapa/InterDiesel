@@ -22,6 +22,9 @@ const C = {
   counts: (): Crumb => ({ label: t('counts.title'), href: '/counts' }),
   users: (): Crumb => ({ label: t('users.title'), href: '/users' }),
   stores: (): Crumb => ({ label: t('stores.title'), href: '/stores' }),
+  garage: (): Crumb => ({ label: t('nav.garage'), href: '/garage' }),
+  vehicles: (): Crumb => ({ label: t('garage.vehicles'), href: '/vehicles' }),
+  issues: (): Crumb => ({ label: t('garage.issues'), href: '/issues' }),
 };
 
 /** Parents of the page at `path` (hash route split on "/"). Empty for the 5 main tabs. */
@@ -69,6 +72,19 @@ export function trailFor(path: string[], s: Session | null, query?: URLSearchPar
       return [C.menu(), C.users()];
     case 'store':
       return [C.menu(), C.stores()];
+    case 'job':
+    case 'vehicles':
+    case 'reminders':
+    case 'services':
+      return [C.garage()];
+    case 'vehicle':
+      return [C.garage(), C.vehicles()];
+    case 'issues':
+      return s?.store.kind === 'garage' ? [C.garage()] : [C.menu()];
+    case 'issue':
+      return s?.store.kind === 'garage' ? [C.garage(), C.issues()] : [C.menu(), C.issues()];
+    case 'sell':
+      return [C.menu()];
     case 'reverse': {
       const doc = (href: string): Crumb => ({ label: t('reverse.document'), href });
       switch (b) {
@@ -86,6 +102,10 @@ export function trailFor(path: string[], s: Session | null, query?: URLSearchPar
           return [C.customers()];
         case 'cash_close':
           return [C.reports(), C.cash()];
+        case 'issue':
+          return [C.garage(), C.issues(), doc(`/issue/${c}`)];
+        case 'job_invoice':
+          return [C.garage()];
         default:
           return [C.menu()];
       }

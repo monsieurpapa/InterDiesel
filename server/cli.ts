@@ -37,7 +37,7 @@ async function main() {
       const r = await seedDemo(db);
       console.log(`Données de démonstration créées: ${r.products} articles, ${r.sales} ventes.`);
       console.log('Connexion propriétaire: proprietaire / interdiesel2026 (PIN 1111)');
-      console.log('Gérants: ibanda/ibanda2026, kadutu/kadutu2026, bagira/bagira2026. Vendeurs: PIN 1234 ou 5678.');
+      console.log('Gérants: ibanda/ibanda2026, kadutu/kadutu2026, bagira/bagira2026, garage/garage2026. Vendeurs et mécaniciens: PIN 1234 ou 5678.');
       break;
     }
     case 'init': {
@@ -59,7 +59,7 @@ async function main() {
       await createStaff(db);
       const after = (db.prepare("SELECT COUNT(*) n FROM records WHERE kind='user'").get() as any).n;
       console.log(`${after - before} utilisateur(s) créé(s). PIN par défaut :`);
-      for (const [, name, role, pin] of STAFF) console.log(`  ${name} (${role === 'manager' ? 'gérant' : 'vendeur'}) : ${pin}`);
+      for (const [, name, role, pin] of STAFF) console.log(`  ${name} (${({ manager: 'gérant', seller: 'vendeur', mechanic: 'mécanicien' } as Record<string, string>)[role]}) : ${pin}`);
       console.log('Changez ces PIN dans Menu > Utilisateurs, et donnez un identifiant à chaque gérant.');
       break;
     }

@@ -441,6 +441,7 @@ export function UserEditPage(props: { id?: string }) {
         <Field label={t('users.role')}>
           <select value={v.role} onChange={(e) => set({ role: e.currentTarget.value as Role })} disabled={existing?.id === s.user.id}>
             <option value="seller">{t('role.seller')}</option>
+            <option value="mechanic">{t('role.mechanic')}</option>
             <option value="manager">{t('role.manager')}</option>
             <option value="owner">{t('role.owner')}</option>
           </select>
@@ -492,7 +493,7 @@ export function StoresPage() {
         {all.map((x) => (
           <a class="item" href={`#/store/${x.id}`}>
             <div class="main">
-              <div class="title">{x.name} ({x.code})</div>
+              <div class="title">{x.name} ({x.code}) {x.kind === 'garage' && <span class="tag info">{t('store.kind.garage')}</span>}</div>
               <div class="sub">{x.address} · {x.phone}</div>
             </div>
           </a>
@@ -524,6 +525,12 @@ export function StoreEditPage(props: { id: string }) {
         <Field label={t('stores.code')} hint={t('stores.codeHint')}><input value={v.code} maxLength={6} onInput={(e) => set({ code: e.currentTarget.value })} required /></Field>
         <Field label={t('stores.address')}><input value={v.address} onInput={(e) => set({ address: e.currentTarget.value })} /></Field>
         <Field label={t('stores.phone')} hint={t('stores.phoneHint')}><input value={v.phone} onInput={(e) => set({ phone: e.currentTarget.value })} inputMode="tel" /></Field>
+        <Field label={t('store.kind')}>
+          <select value={v.kind ?? 'shop'} onChange={(e) => set({ kind: e.currentTarget.value as Store['kind'] })}>
+            <option value="shop">{t('store.kind.shop')}</option>
+            <option value="garage">{t('store.kind.garage')}</option>
+          </select>
+        </Field>
         {existing && <label class="check"><input type="checkbox" checked={v.active} onChange={(e) => set({ active: e.currentTarget.checked })} />{t('common.active')}</label>}
         <button class="btn primary block" disabled={!s.can('store.manage')}>{t('common.save')}</button>
       </form>
